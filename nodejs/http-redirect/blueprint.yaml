@@ -1,0 +1,18 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# Metadata for the project
+title: "HTTP Redirect"
+tags: 
+  - nodejs
+  - starter
+  - http
+description: Blueprint for returning HTTP redirect implemented in NodeJS.
+language:
+  name: nodejs
+  version: "20"
+  title: NodeJS
+version: 0.1.0
+blueprint: true
+handler: handler.js
+section: 
+  title: "Getting Started"
+  slug: getting-started

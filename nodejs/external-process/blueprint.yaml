@@ -1,0 +1,18 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# Metadata for the project
+title: "Run an external process using NodeJS"
+tags: 
+  - nodejs
+  - shell
+  - external-process
+description: Demonstrates running an external process using the Node.js child_process module.
+language:
+  name: nodejs
+  version: "20"
+  title: NodeJS
+version: 0.1.0
+blueprint: true
+handler: handler.js
+section: 
+  title: "IT Automation"
+  slug: it-automation

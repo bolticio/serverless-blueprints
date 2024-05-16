@@ -1,0 +1,16 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# Metadata for the project
+title: "Modify HTTP response header"
+tags: 
+  - golang
+  - starter
+  - http
+description: Blueprint for modifying response header implemented in Golang.
+language: 
+  golang/1.22
+version: 0.1.0
+blueprint: true
+handler: handler.go
+section: 
+  title: "Getting Started"
+    slug: getting-started

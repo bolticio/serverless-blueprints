@@ -1,0 +1,18 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT,
+# Metadata for the project
+title: "Run an external process using Golang"
+tags:
+  - golang
+  - shell
+  - external-process
+description: Demonstrates running an external process using the Golang os/exec module.
+language:
+  name: python
+  version: "3"
+  title: Golang
+version: 0.1.0
+blueprint: true
+handler: handler.go
+section: 
+  title: "IT Automation"
+  slug: it-automation

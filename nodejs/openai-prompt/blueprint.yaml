@@ -1,0 +1,19 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# Metadata for the project
+title: "OpenAI Integration"
+tags: 
+  - integration
+  - openai
+  - gpt
+  - nodejs
+description: Integration with OpenAI's GPT API for generating conversational responses.
+language:
+  name: nodejs
+  version: "20"
+  title: NodeJS
+version: 0.1.0
+blueprint: true
+handler: handler.js
+section: 
+  title: "External Integrations"
+  slug: external-integrations

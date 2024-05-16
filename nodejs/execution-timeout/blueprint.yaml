@@ -1,0 +1,17 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# Metadata for the project
+title: "Delayed execution" 
+tags: 
+  - nodejs
+  - timeout
+description: Blueprint to delay request execution using timeouts
+language:
+  name: nodejs
+  version: "20"
+  title: NodeJS
+version: 0.1.0
+blueprint: true
+handler: handler.js
+section: 
+  title: "Getting Started"
+  slug: getting-started

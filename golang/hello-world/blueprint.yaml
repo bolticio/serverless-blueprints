@@ -1,0 +1,17 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# Metadata for the project
+title: "Hello world"
+tags: 
+  - golang
+  - starter
+description: A starter serverless function 
+language:
+  name: python
+  version: "3"
+  title: Golang
+version: 0.1.0
+blueprint: true
+handler: handler.go
+section: 
+  title: "Getting Started"
+  slug: getting-started

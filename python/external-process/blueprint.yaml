@@ -1,0 +1,18 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT,
+# Metadata for the project
+title: "Command Execution"
+tags:
+  - python
+  - shell
+  - external-process
+description: Demonstrates running an external process using the Python subprocess module.
+language:
+  name: python
+  version: "3"
+  title: Python
+version: 0.1.0
+blueprint: true
+handler: handler.py
+section: 
+  title: "IT Automation"
+  slug: it-automation

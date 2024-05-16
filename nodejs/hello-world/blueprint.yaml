@@ -1,0 +1,17 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# Metadata for the project
+title: "Hello world"
+tags: 
+  - nodejs
+  - starter
+description: A starter serverless function 
+language:
+  name: nodejs
+  version: "20"
+  title: NodeJS
+version: 0.1.0
+blueprint: true
+handler: handler.js
+section: 
+  title: "Getting Started"
+  slug: getting-started

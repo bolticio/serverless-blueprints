@@ -1,0 +1,18 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# Metadata for the project
+title: "HTTP Method Identifier"
+tags: 
+  - python
+  - starter
+  - http
+description: Blueprint for identifying the HTTP Method of each incoming request
+language:
+  name: python
+  version: "3"
+  title: Python
+version: 0.1.0
+blueprint: true
+handler: handler.py
+section: 
+  title: "Getting Started"
+  slug: getting-started
