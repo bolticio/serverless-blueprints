@@ -6,9 +6,8 @@ tags:
   - timeout
 description: Blueprint to delay request execution using timeouts
 language:
-  name: python
-  version: "3"
-  title: Golang
+  name: golang
+  version: "1.22"
   title: Golang
 version: 0.1.0
 blueprint: true

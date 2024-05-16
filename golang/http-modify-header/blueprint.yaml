@@ -6,11 +6,13 @@ tags:
   - starter
   - http
 description: Blueprint for modifying response header implemented in Golang.
-language: 
-  golang/1.22
+language:
+  name: golang
+  version: "1.22"
+  title: Golang
 version: 0.1.0
 blueprint: true
 handler: handler.go
 section: 
   title: "Getting Started"
-    slug: getting-started
+  slug: getting-started

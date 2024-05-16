@@ -6,8 +6,8 @@ tags:
   - starter
 description: A starter serverless function 
 language:
-  name: python
-  version: "3"
+  name: golang
+  version: "1.22"
   title: Golang
 version: 0.1.0
 blueprint: true

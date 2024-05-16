@@ -7,8 +7,8 @@ tags:
   - external-process
 description: Demonstrates running an external process using the Golang os/exec module.
 language:
-  name: python
-  version: "3"
+  name: golang
+  version: "1.22"
   title: Golang
 version: 0.1.0
 blueprint: true
