@@ -16,3 +16,4 @@ handler: handler.go
 section: 
   title: "Getting Started"
   slug: getting-started
+  position: 1

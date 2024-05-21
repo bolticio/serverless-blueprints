@@ -1,11 +1,10 @@
 # SYSTEM MANAGED, DO NOT NOT EDIT, 
 # Metadata for the project
-title: "HTTP Redirect"
+title: "DNS Stats"
 tags: 
+  - dns
   - python
-  - starter
-  - http
-description: Blueprint for returning HTTP redirect implemented in Python.
+description: Blueprint program to get DNS stats for the given domain
 language:
   name: python
   version: "3"
@@ -14,6 +13,5 @@ version: 0.1.0
 blueprint: true
 handler: handler.py
 section: 
-  title: "Getting Started"
-  slug: getting-started
-  position: 1
+  title: "IT Automation"
+  slug: it-automation

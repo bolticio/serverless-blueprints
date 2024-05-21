@@ -1,11 +1,9 @@
 # SYSTEM MANAGED, DO NOT NOT EDIT, 
 # Metadata for the project
-title: "HTTP Redirect"
+title: "Environment Variables"
 tags: 
   - python
-  - starter
-  - http
-description: Blueprint for returning HTTP redirect implemented in Python.
+description: Demonstrates how to use environment variables within a ferverless function
 language:
   name: python
   version: "3"

@@ -1,6 +1,6 @@
 # SYSTEM MANAGED, DO NOT NOT EDIT, 
 # Metadata for the project
-title: "Delayed execution" 
+title: "Delayed Execution" 
 tags: 
   - python
   - timeout
@@ -15,3 +15,4 @@ handler: handler.py
 section: 
   title: "Getting Started"
   slug: getting-started
+  position: 1
