@@ -17,3 +17,4 @@ handler: handler.js
 section: 
   title: "External Integrations"
   slug: external-integrations
+  position: 2

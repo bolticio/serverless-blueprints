@@ -16,3 +16,4 @@ handler: handler.js
 section: 
   title: "IT Automation"
   slug: it-automation
+  position: 3

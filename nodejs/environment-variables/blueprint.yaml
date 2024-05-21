@@ -2,15 +2,15 @@
 # Metadata for the project
 title: "Environment Variables"
 tags: 
-  - python
+  - nodejs
 description: Demonstrates how to use environment variables within a serverless function
 language:
-  name: python
-  version: "3"
-  title: Python
+  name: nodejs
+  version: "20"
+  title: NodeJS
 version: 0.1.0
 blueprint: true
-handler: handler.py
+handler: handler.js
 section: 
   title: "Getting Started"
   slug: getting-started

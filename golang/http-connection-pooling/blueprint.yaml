@@ -1,0 +1,18 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# Metadata for the project
+title: "HTTP connection pooling"
+tags: 
+  - golang
+  - http
+description: Shows how to recycle HTTP connections using HTTP connection pools.
+language:
+  name: golang
+  version: "1.22"
+  title: Golang
+version: 0.1.0
+blueprint: true
+handler: handler.go
+section: 
+  title: "External Integrations"
+  slug: external-integrations
+  position: 2

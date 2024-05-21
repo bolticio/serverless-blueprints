@@ -1,11 +1,11 @@
-# SYSTEM MANAGED, DO NOT NOT EDIT,
+# SYSTEM MANAGED, DO NOT NOT EDIT, 
 # Metadata for the project
-title: "Run an external process using Golang"
-tags:
+title: "Statelessness"
+tags: 
   - golang
-  - shell
-  - external-process
-description: Demonstrates running an external process using the Golang os/exec module.
+  - starter
+  - http
+description: An example of what variable state function instances do (and don't) store.
 language:
   name: golang
   version: "1.22"

@@ -1,12 +1,10 @@
 # SYSTEM MANAGED, DO NOT NOT EDIT, 
 # Metadata for the project
-title: "OpenAI Integration"
+title: "HTTP connection pooling"
 tags: 
-  - integration
-  - openai
-  - gpt
   - python
-description: Integration with OpenAI's GPT API for generating conversational responses.
+  - http
+description: Shows how to recycle HTTP connections using HTTP connection pools.
 language:
   name: python
   version: "3"

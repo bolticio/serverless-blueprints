@@ -1,0 +1,20 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# Metadata for the project
+title: "HTTP CORs"
+tags: 
+  - nodejs
+  - starter
+  - http
+  - cors
+description: Shows how to make CORS-enabled requests with serverless functions.
+language:
+  name: nodejs
+  version: "20"
+  title: NodeJS
+version: 0.1.0
+blueprint: true
+handler: handler.js
+section: 
+  title: "Getting Started"
+  slug: getting-started
+  position: 1

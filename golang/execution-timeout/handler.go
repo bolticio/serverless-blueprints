@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func handler(context http.ResponseWriter, event *http.Request) {
+func handler(w http.ResponseWriter, r *http.Request) {
 	// Set a timeout delay in milliseconds
 	delay := time.Second * 1 // 1 second
 
@@ -24,8 +24,8 @@ func handler(context http.ResponseWriter, event *http.Request) {
 	}
 	fmt.Printf("Response: %s\n", response)
 	// Set the Content-Type header to application/json
-	context.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
 	// Encode the response map into JSON and write it to the response
-	json.NewEncoder(context).Encode(response)
+	json.NewEncoder(w).Encode(response)
 }

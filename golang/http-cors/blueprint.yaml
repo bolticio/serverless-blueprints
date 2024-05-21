@@ -1,0 +1,20 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# Metadata for the project
+title: "HTTP CORs"
+tags: 
+  - golang
+  - starter
+  - http
+  - cors
+description: Shows how to make CORS-enabled requests with serverless functions.
+language:
+  name: golang
+  version: "1.22"
+  title: Golang
+version: 0.1.0
+blueprint: true
+handler: handler.go
+section: 
+  title: "Getting Started"
+  slug: getting-started
+  position: 1
