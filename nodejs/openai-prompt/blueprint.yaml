@@ -18,3 +18,5 @@ section:
   title: "External Integrations"
   slug: external-integrations
   position: 2
+envs:
+  OPENAI_API_KEY: "enter your key"

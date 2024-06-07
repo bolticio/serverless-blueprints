@@ -2,15 +2,15 @@
 # Metadata for the project
 title: "Environment Variables"
 tags: 
-  - nodejs
+  - golang
 description: Demonstrates how to use environment variables within a serverless function
 language:
-  name: nodejs
-  version: "20"
-  title: NodeJS
+  name: golang
+  version: "1.22"
+  title: Golang
 version: 0.1.0
 blueprint: true
-handler: handler.js
+handler: handler.go
 section: 
   title: "Getting Started"
   slug: getting-started

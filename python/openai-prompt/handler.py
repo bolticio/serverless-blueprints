@@ -1,5 +1,6 @@
 import json
 import requests
+import os
 
 # Function to handle requests
 def handler(request):
@@ -12,11 +13,14 @@ def handler(request):
         max_tokens = request_body.get('max_tokens', 150)
         temperature = request_body.get('temperature', 0.7)
         model = request_body.get('model', 'gpt-3.5-turbo')
-        token = request_body.get('token')
+        token = os.getenv('OPENAI_API_KEY') or request_body.get('token')
 
         # Validate input
         if not prompt or not isinstance(prompt, str):
             return {'error': 'Invalid prompt'}
+
+        if not token:
+            return {'error': 'OpenAI API key is required'}
 
         # Prepare request options
         url = 'https://api.openai.com/v1/chat/completions'
@@ -38,7 +42,7 @@ def handler(request):
         return res_json
     except Exception as e:
         # Handle exceptions
-        return {'error': 'Internal Server Error'}
+        return {'error': 'Internal Server Error', 'details': str(e)}
 
 # Function to make HTTP request
 def make_http_request(url, headers, body):

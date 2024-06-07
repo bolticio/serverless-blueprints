@@ -15,3 +15,5 @@ section:
   title: "Getting Started"
   slug: getting-started
   position: 1
+envs:
+  FOO: "BAR"

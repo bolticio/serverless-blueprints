@@ -1,73 +1,42 @@
-import { request as httpsRequest } from "https";
-
-function makeHttpRequest(options, body) {
-  return new Promise((resolve, reject) => {
-    const protocol = httpsRequest;
-
-    const req = protocol(options, (res) => {
-      let responseBody = "";
-
-      res.on("data", (chunk) => {
-        responseBody += chunk;
-      });
-
-      res.on("end", () => {
-        resolve({
-          status: res.statusCode,
-          headers: res.headers,
-          body: responseBody,
-        });
-      });
-    });
-
-    req.on("error", (error) => {
-      reject(error);
-    });
-
-    if (body) {
-      req.write(body);
-    }
-
-    req.end();
-  });
-}
+import axios from 'axios';
 
 // Handler function
 async function handler(req, res) {
   try {
-    const { prompt, max_tokens, temperature, model, token } = req.body;
+    let { prompt, max_tokens, temperature, model, token } = req.body;
+    token = process.env.OPENAI_API_KEY || token;
 
     // Validate input
     if (!prompt || typeof prompt !== "string") {
       return res.status(400).json({ error: "Invalid prompt" });
     }
 
+    // Validate token
+    if (!token) {
+      return res.status(400).json({ error: "OpenAI API key is required" });
+    }
+
     // Prepare request options
     const options = {
-      hostname: "api.openai.com",
-      port: 443,
-      path: "/v1/chat/completions",
-      method: "POST",
+      method: 'POST',
+      url: 'https://api.openai.com/v1/chat/completions',
       headers: {
-        "Content-Type": "application/json",
-        Authorization:
-          `Bearer ${token}`, // Replace with your OpenAI API key
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, // Replace with your OpenAI API key
+      },
+      data: {
+        model: model || 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: max_tokens || 150,
+        temperature: temperature || 0.7,
       },
     };
 
     // Make HTTP request
-    const responseBody = await makeHttpRequest(
-      options,
-      JSON.stringify({
-        model: model || "gpt-3.5-turbo",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: max_tokens || 150,
-        temperature: temperature || 0.7,
-      })
-    );
+    const response = await axios(options);
 
     // Return response from OpenAI
-    res.json(JSON.parse(responseBody.body));
+    res.json(response.data);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Internal Server Error" });

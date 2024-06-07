@@ -1,5 +1,5 @@
-// Package http provides a set of HTTP Cloud Functions samples.
-package http
+// package main provides a set of HTTP Cloud Functions samples.
+package main
 
 import (
 	"encoding/json"
