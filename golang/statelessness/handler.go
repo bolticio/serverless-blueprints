@@ -2,7 +2,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -19,14 +18,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	// all instances may not be equal to this value!
 	fmt.Fprintf(w, "Instance execution count: %d", count)
 
-	// Create the response body
-	response := map[string]int{
-		"count": count,
-	}
-	fmt.Printf("Response: %v\n", response)
-	// Set the Content-Type header to application/json
-	w.Header().Set("Content-Type", "application/json")
-
-	// Encode the response map into JSON and write it to the response
-	json.NewEncoder(w).Encode(response)
+	// Print to stdout. Function logs are displayed in the console.
+	fmt.Printf("Count: %v\n", count)
 }

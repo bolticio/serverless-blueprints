@@ -16,4 +16,8 @@ section:
   slug: getting-started
   position: 1
 envs:
-  FOO: "BAR"
+  - name: OPENAI_API_KEY
+    description: OpenAI API Key to access GPT API
+    short_description: OpenAI API Key
+    type: string
+    default: "enter your key"

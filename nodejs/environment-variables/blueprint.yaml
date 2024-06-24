@@ -16,4 +16,8 @@ section:
   slug: getting-started
   position: 1
 envs:
-  FOO: "BAR"
+  - name: FOO
+    description: Just a normal environment variable
+    short_description: Environment variable
+    type: string
+    default: BAR
