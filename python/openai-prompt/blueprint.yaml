@@ -18,9 +18,9 @@ section:
   title: "External Integrations"
   slug: external-integrations
   position: 2
-envs:
-  - name: OPENAI_API_KEY
-    description: OpenAI API Key to access GPT API
-    short_description: OpenAI API Key
-    type: string
-    default: "enter your key"
+# envs:
+#   - name: OPENAI_API_KEY
+#     description: OpenAI API Key to access GPT API
+#     short_description: OpenAI API Key
+#     type: string
+#     default: "enter your key"
