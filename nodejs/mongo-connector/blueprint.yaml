@@ -16,8 +16,8 @@ version: 0.1.0
 blueprint: true
 handler: handler.js
 section:
-  title: "Integration Connectors"
-  slug: integration-connectors
+  title: "Database Connectors"
+  slug: database-connectors
   position: 3
 envs:
   - name: MAX_CONNECTIONS
