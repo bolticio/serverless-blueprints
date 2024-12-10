@@ -1,7 +1,7 @@
-# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# SYSTEM MANAGED, DO NOT NOT EDIT,
 # Metadata for the project
 title: "DNS Stats"
-tags: 
+tags:
   - dns
   - python
 description: Blueprint program to get DNS stats for the given domain
@@ -12,7 +12,7 @@ language:
 version: 0.1.0
 blueprint: true
 handler: handler.py
-section: 
+section:
   title: "IT Automation"
   slug: it-automation
-  position: 3
+  position: 4

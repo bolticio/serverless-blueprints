@@ -13,7 +13,7 @@ language:
 version: 0.1.0
 blueprint: true
 handler: handler.py
-section: 
+section:
   title: "IT Automation"
   slug: it-automation
-  position: 3
+  position: 4

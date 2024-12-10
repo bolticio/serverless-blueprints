@@ -1,0 +1,19 @@
+{
+    "name": "boltic-mongodb-connector",
+    "version": "1.0.0",
+    "description": "The MongoDB connector enables seamless integration with any MongoDB database, allowing you to perform various operations efficiently.",
+    "main": "handler.js",
+    "scripts": {
+        "start": "node handler.js"
+    },
+    "dependencies": {
+        "mongodb": "^5.0.0",
+        "tunnel-ssh": "^5.1.2"
+    },
+    "engines": {
+        "node": ">=16.0.0"
+    },
+    "author": "Your Name",
+    "license": "MIT",
+    "type": "module"
+}
