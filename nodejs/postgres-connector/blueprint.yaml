@@ -29,7 +29,7 @@ envs:
     short_description: Timeout for DB connections
     type: number
     default: "Enter connection timeout"
-icon: https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Postgresql_elephant.svg/993px-Postgresql_elephant.svg.png
+icon: https://cdn.pixelbin.io/v2/fyndcloud/original/Temporal/Uploads/fcz0/c7d5096b-e8dd-4520-b1b9-0e4e01b839ab/images/Postgresql_elephant.svg_1734040977427.png
 activitySchema: |
   [
       {

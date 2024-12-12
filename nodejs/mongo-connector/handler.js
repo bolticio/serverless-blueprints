@@ -97,10 +97,9 @@ const createMongoConnection = async (config, localPort = null) => {
  * @param {number} dbPort - Database port.
  * @returns {Promise<Object>} The SSH tunnel and local port.
  */
-const createSSHTunnel = (sshConfig, dbHost, dbPort) => {
-  return new Promise((resolve, reject) => {
+const createSSHTunnel = async (sshConfig, dbHost, dbPort) => {
+  try {
     const { host, port, username, private_key_file, auth_method } = sshConfig;
-
     const tunnelOptions = { autoClose: true };
     const forwardOptions = { dstAddr: dbHost, dstPort: dbPort };
     const sshOptions = {
@@ -110,18 +109,23 @@ const createSSHTunnel = (sshConfig, dbHost, dbPort) => {
       privateKey: auth_method === 'private_key' ? Buffer.from(private_key_file, 'utf-8') : undefined,
     };
 
-    createTunnel(tunnelOptions, null, sshOptions, forwardOptions)
-      .then(([server, conn]) => {
-        const localPort = server.address().port;
-        console.log(`SSH tunnel established. Local port: ${localPort}`);
-        resolve({ tunnel: server, localPort });
+    const [server, conn] = await createTunnel(tunnelOptions, null, sshOptions, forwardOptions);
+    const localPort = server.address().port;
+    console.log(`SSH tunnel established. Local port: ${localPort}`);
 
-        // Attach error listeners to the SSH server and connection
-        server.on('error', (err) => reject(new Error(`SSH Tunnel Server Error: ${err.message}`)));
-        conn.on('error', (err) => reject(new Error(`SSH Tunnel Connection Error: ${err.message}`)));
-      })
-      .catch((err) => reject(new Error(`Failed to establish SSH tunnel: ${err.message}`)));
-  });
+    // Attach error listeners to the SSH server and connection
+    server.on('error', (err) => {
+      throw new Error(`SSH Tunnel Server Error: ${err.message}`);
+    });
+    conn.on('error', (err) => {
+      throw new Error(`SSH Tunnel Connection Error: ${err.message}`);
+    });
+
+    return { tunnel: server, localPort };
+  } catch (err) {
+    console.error(`Failed to establish SSH tunnel: ${err.message}`);
+    throw err;
+  }
 };
 
 /**

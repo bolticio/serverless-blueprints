@@ -28,9 +28,8 @@ const validateRequestBody = ({ query, secretData }) => {
     errors.push('secretData.db_config is required.');
   }
 
-  const { host, port, database, username, password } = db_config || {};
-  if (!host) errors.push('db_config.host is required.');
-  if (!port) errors.push('db_config.port is required.');
+  const { hosts, database, username, password } = db_config || {};
+  if (!hosts || hosts.length === 0) errors.push('db_config.hosts is required.');
   if (!database) errors.push('db_config.database is required.');
   if (!username) errors.push('db_config.username is required.');
   if (!password) errors.push('db_config.password is required.');
@@ -64,10 +63,10 @@ const validateRequestBody = ({ query, secretData }) => {
  */
 const createPostgresConnection = async (config, localPort = null) => {
   const { use_ssh } = config.secretData;
-  const { username, password, host, port, database } = config.secretData.db_config;
+  const { username, password, hosts, database } = config.secretData.db_config;
 
-  const connectionHost = use_ssh ? '127.0.0.1' : host;
-  const connectionPort = use_ssh ? localPort : port;
+  const connectionHost = use_ssh ? '127.0.0.1' : hosts[0]?.host;
+  const connectionPort = use_ssh ? localPort : hosts[0]?.port || 5432;
 
   const client = new pg.Client({
     host: connectionHost,
@@ -78,7 +77,7 @@ const createPostgresConnection = async (config, localPort = null) => {
     connectionTimeoutMillis: CONNECTION_TIMEOUT,
   });
 
-  console.log(`Connecting to Postgres URI: postgresql://<REDACTED>:<REDACTED>@${host}:${connectionPort}/${database}`);
+  console.log(`Connecting to Postgres URI: postgresql://<REDACTED>:<REDACTED>@${connectionHost}:${connectionPort}/${database}`);
 
   try {
     // Attempt to connect to PostgreSQL within the defined timeout
@@ -99,10 +98,9 @@ const createPostgresConnection = async (config, localPort = null) => {
  * @param {number} dbPort - Database port.
  * @returns {Promise<Object>} The SSH tunnel and local port.
  */
-const createSSHTunnel = (sshConfig, dbHost, dbPort) => {
-  return new Promise((resolve, reject) => {
+const createSSHTunnel = async (sshConfig, dbHost, dbPort) => {
+  try {
     const { host, port, username, private_key_file, auth_method } = sshConfig;
-
     const tunnelOptions = { autoClose: true };
     const forwardOptions = { dstAddr: dbHost, dstPort: dbPort };
     const sshOptions = {
@@ -112,18 +110,23 @@ const createSSHTunnel = (sshConfig, dbHost, dbPort) => {
       privateKey: auth_method === 'private_key' ? Buffer.from(private_key_file, 'utf-8') : undefined,
     };
 
-    createTunnel(tunnelOptions, null, sshOptions, forwardOptions)
-      .then(([server, conn]) => {
-        const localPort = server.address().port;
-        console.log(`SSH tunnel established. Local port: ${localPort}`);
-        resolve({ tunnel: server, localPort });
+    const [server, conn] = await createTunnel(tunnelOptions, null, sshOptions, forwardOptions);
+    const localPort = server.address().port;
+    console.log(`SSH tunnel established. Local port: ${localPort}`);
 
-        // Attach error listeners to the SSH server and connection
-        server.on('error', (err) => reject(new Error(`SSH Tunnel Server Error: ${err.message}`)));
-        conn.on('error', (err) => reject(new Error(`SSH Tunnel Connection Error: ${err.message}`)));
-      })
-      .catch((err) => reject(new Error(`Failed to establish SSH tunnel: ${err.message}`)));
-  });
+    // Attach error listeners to the SSH server and connection
+    server.on('error', (err) => {
+      throw new Error(`SSH Tunnel Server Error: ${err.message}`);
+    });
+    conn.on('error', (err) => {
+      throw new Error(`SSH Tunnel Connection Error: ${err.message}`);
+    });
+
+    return { tunnel: server, localPort };
+  } catch (err) {
+    console.error(`Failed to establish SSH tunnel: ${err.message}`);
+    throw err;
+  }
 };
 
 /**
@@ -152,7 +155,7 @@ const getOrCreateConnection = async (config, query) => {
     // Create a new connection, either with or without SSH
     const connection = use_ssh
       ? await (async () => {
-        const { host: dbHost, port: dbPort } = db_config;
+        const { host: dbHost, port: dbPort } = db_config.hosts[0];
         const { tunnel, localPort } = await createSSHTunnel(ssh_config, dbHost, dbPort);
         const postgresConnection = await createPostgresConnection(config, localPort);
         postgresConnection._tunnel = tunnel; // Store tunnel instance for cleanup
