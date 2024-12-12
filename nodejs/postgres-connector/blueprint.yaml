@@ -1,13 +1,12 @@
 # SYSTEM MANAGED, DO NOT NOT EDIT,
 # Metadata for the project
-title: "MongoDB Connector"
+title: "PostgreSQL Connector"
 tags:
   - connector
-  - mongo
-  - mongodb
+  - postgres
   - nodejs
   - remote-ssh
-description: The MongoDB connector enables seamless integration with any MongoDB database, allowing you to perform various operations efficiently.
+description: The PostgreSQL connector enables seamless integration with any PostgreSQL database, allowing you to perform various operations efficiently.
 language:
   name: nodejs
   version: "20"
@@ -30,21 +29,21 @@ envs:
     short_description: Timeout for DB connections
     type: number
     default: "Enter connection timeout"
-icon: "https://cdn.pixelbin.io/v2/fyndcloud/original/Temporal/Uploads/fcz0/c7d5096b-e8dd-4520-b1b9-0e4e01b839ab/images/png-transparent-mongodb-original-logo-icon-thumbnail_1733730330381.png"
+icon: https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Postgresql_elephant.svg/993px-Postgresql_elephant.svg.png
 activitySchema: |
   [
       {
           "name": "secret",
           "meta": {
-              "displayName": "MongoDB Integration",
+              "displayName": "PostgreSQL Integration",
               "displayType": "autocomplete",
-              "placeholder": "Select MongoDB Integration",
-              "description": "MongoDB is a secure partner with Boltic. Your credentials are encrypted & can be removed at any time.",
+              "placeholder": "Select PostgreSQL Integration",
+              "description": "PostgreSQL is a secure partner with Boltic. Your credentials are encrypted & can be removed at any time.",
               "options": [],
               "config": {
                   "urlType": "secret",
                   "method": "get",
-                  "url": "/MONGODB?current_page=1&page_size=999",
+                  "url": "/POSTGRESQL?current_page=1&page_size=999",
                   "labelKey": "name",
                   "valueKey": "_id"
               },
@@ -67,7 +66,7 @@ activitySchema: |
                       "meta": {
                           "displayName": "Query",
                           "displayType": "code",
-                          "placeholder": "db.collection(\"example\").insertOne({ name: \"John Doe\", age: 30 })",
+                          "placeholder": "SELECT * from example;",
                           "description": "Please provide your query",
                           "validation": {
                               "required": true
