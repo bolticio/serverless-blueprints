@@ -23,30 +23,11 @@ const validateRequestBody = ({ command, secretData }) => {
   }
 
   // Validate Redis configuration
-  const { db_config, ssh_config, use_ssh } = secretData || {};
-  if (!db_config) {
-    errors.push('secretData.db_config is required.');
-  }
+  const { host, port, database_number, password } = secretData || {};
 
-  const { host, port, password } = db_config || {};
   if (!host) errors.push('db_config.host is required.');
   if (!port) errors.push('db_config.port is required.');
-  if (!password) errors.push('db_config.password is required.');
-
-  // Validate SSH configuration if required
-  if (use_ssh) {
-    if (!ssh_config) {
-      errors.push('secretData.ssh_config is required when use_ssh is true.');
-    } else {
-      const { host, port, username, private_key_file, auth_method } = ssh_config || {};
-      if (!host) errors.push('ssh_config.host is required.');
-      if (!port) errors.push('ssh_config.port is required.');
-      if (!username) errors.push('ssh_config.username is required.');
-      if (auth_method === 'private_key' && !private_key_file) {
-        errors.push('ssh_config.private_key_file is required for private_key auth.');
-      }
-    }
-  }
+  if (!database_number) errors.push('db_config.port is required.');
 
   // Throw error if any validation fails
   if (errors.length) {
@@ -62,7 +43,7 @@ const validateRequestBody = ({ command, secretData }) => {
  */
 const createRedisConnection = async (config, localPort = null) => {
   const { use_ssh } = config.secretData;
-  const { host, port, password } = config.secretData.db_config;
+  const { host, port, password, database_number } = config.secretData;
 
   const connectionHost = use_ssh ? '127.0.0.1' : host;
   const connectionPort = use_ssh ? localPort : port;
@@ -70,6 +51,7 @@ const createRedisConnection = async (config, localPort = null) => {
   const client = new Redis({
     host: connectionHost,
     port: connectionPort,
+    db: database_number,
     password,
     connectTimeout: CONNECTION_TIMEOUT,
   });
@@ -147,19 +129,9 @@ const getOrCreateConnection = async (config) => {
     throw new Error('Connection limit reached.');
   }
 
-  const { use_ssh, db_config, ssh_config } = config.secretData;
-
   try {
-    // Create a new connection, either with or without SSH
-    const connection = use_ssh
-      ? await (async () => {
-        const { host: redisHost, port: redisPort } = db_config;
-        const { tunnel, localPort } = await createSSHTunnel(ssh_config, redisHost, redisPort);
-        const redisConnection = await createRedisConnection(config, localPort);
-        redisConnection._tunnel = tunnel; // Store tunnel instance for cleanup
-        return redisConnection;
-      })()
-      : await createRedisConnection(config);
+    // Create a new connection
+    await createRedisConnection(config);
 
     // Cache the newly created connection
     connectionPool.set(configKey, connection);
