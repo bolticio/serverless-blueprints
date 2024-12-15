@@ -1,7 +1,7 @@
 {
-    "name": "boltic-postgresql-connector",
+    "name": "boltic-redis-connector",
     "version": "1.0.0",
-    "description": "The PostgreSQL connector enables seamless integration with any PostgreSQL database, allowing you to perform various operations efficiently.",
+    "description": "The Redis connector enables seamless integration with any Redis database, allowing you to perform various operations efficiently.",
     "main": "handler.js",
     "scripts": {
         "start": "node handler.js"
