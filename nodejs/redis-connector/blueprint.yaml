@@ -29,7 +29,7 @@ envs:
     short_description: Timeout for DB connections
     type: number
     default: "Enter connection timeout"
-icon: https://cdn.pixelbin.io/v2/fyndcloud/original/Temporal/Uploads/fcz0/c7d5096b-e8dd-4520-b1b9-0e4e01b839ab/images/Redis-Logo.wine_1734043293430.svg
+icon: https://cdn.pixelbin.io/v2/fyndcloud/original/Temporal/Uploads/fcz0/undefined/images/ic_reddis_1714397917082.svg
 activitySchema: |
   [
       {
