@@ -1,0 +1,19 @@
+{
+    "name": "boltic-postgresql-connector",
+    "version": "1.0.0",
+    "description": "The PostgreSQL connector enables seamless integration with any PostgreSQL database, allowing you to perform various operations efficiently.",
+    "main": "handler.js",
+    "scripts": {
+        "start": "node handler.js"
+    },
+    "dependencies": {
+        "ioredis": "^5.4.1",
+        "tunnel-ssh": "^5.1.2"
+    },
+    "engines": {
+        "node": ">=16.0.0"
+    },
+    "author": "Your Name",
+    "license": "MIT",
+    "type": "module"
+}

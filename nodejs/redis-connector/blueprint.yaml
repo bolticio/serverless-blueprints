@@ -1,12 +1,12 @@
 # SYSTEM MANAGED, DO NOT NOT EDIT,
 # Metadata for the project
-title: "PostgreSQL Connector"
+title: "Redis Connector"
 tags:
   - connector
-  - postgres
+  - redis
   - nodejs
   - remote-ssh
-description: The PostgreSQL connector enables seamless integration with any PostgreSQL database, allowing you to perform various operations efficiently.
+description: The Redis connector enables seamless integration with any Redis database, allowing you to perform various operations efficiently.
 language:
   name: nodejs
   version: "20"
@@ -29,21 +29,21 @@ envs:
     short_description: Timeout for DB connections
     type: number
     default: "Enter connection timeout"
-icon: https://cdn.pixelbin.io/v2/fyndcloud/original/Temporal/Uploads/fcz0/c7d5096b-e8dd-4520-b1b9-0e4e01b839ab/images/PostgreSQL-Logo.wine_1734043293430.svg
+icon: https://cdn.pixelbin.io/v2/fyndcloud/original/Temporal/Uploads/fcz0/c7d5096b-e8dd-4520-b1b9-0e4e01b839ab/images/Redis-Logo.wine_1734043293430.svg
 activitySchema: |
   [
       {
           "name": "secret",
           "meta": {
-              "displayName": "PostgreSQL Integration",
+              "displayName": "Redis Integration",
               "displayType": "autocomplete",
-              "placeholder": "Select PostgreSQL Integration",
-              "description": "PostgreSQL is a secure partner with Boltic. Your credentials are encrypted & can be removed at any time.",
+              "placeholder": "Select Redis Integration",
+              "description": "Redis is a secure partner with Boltic. Your credentials are encrypted & can be removed at any time.",
               "options": [],
               "config": {
                   "urlType": "secret",
                   "method": "get",
-                  "url": "/POSTGRESQL?current_page=1&page_size=999",
+                  "url": "/REDIS?current_page=1&page_size=999",
                   "labelKey": "name",
                   "valueKey": "_id"
               },
@@ -62,12 +62,29 @@ activitySchema: |
               "displayType": "object",
               "children": [
                   {
-                      "name": "query",
+                      "name": "command",
                       "meta": {
-                          "displayName": "Query",
+                          "displayName": "Command",
                           "displayType": "code",
-                          "placeholder": "SELECT * from example;",
-                          "description": "Please provide your query",
+                          "placeholder": "GET/SET",
+                          "description": "Please provide your command to run",
+                          "validation": {
+                              "required": true
+                          },
+                          "htmlProps": {
+                              "fullscreen": true,
+                              "language": "json",
+                              "size": "md"
+                          }
+                      }
+                  },
+                  {
+                      "name": "args",
+                      "meta": {
+                          "displayName": "Arguments",
+                          "displayType": "code",
+                          "placeholder": "KEY1 VALUE1",
+                          "description": "Please provide your arguments for the command",
                           "validation": {
                               "required": true
                           },
