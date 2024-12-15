@@ -131,7 +131,7 @@ const getOrCreateConnection = async (config) => {
 
   try {
     // Create a new connection
-    await createRedisConnection(config);
+    const connection = await createRedisConnection(config);
 
     // Cache the newly created connection
     connectionPool.set(configKey, connection);
