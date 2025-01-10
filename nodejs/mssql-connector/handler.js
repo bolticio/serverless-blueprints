@@ -51,7 +51,7 @@ const validateRequestBody = ({ query, secretData }) => {
 
   // Throw error if any validation fails
   if (errors.length) {
-    msg = `Validation errors: ${errors.join(' ')}`
+    var msg = `Validation errors: ${errors.join(' ')}`
     console.log(msg)
     throw new Error(msg);
   }
@@ -70,20 +70,23 @@ const createMSSQLConnection = async (config, localPort = null) => {
   const connectionHost = use_ssh ? '127.0.0.1' : hosts[0]?.host;
   const connectionPort = use_ssh ? localPort : hosts[0]?.port || 5432;
 
-  const client = new sql.connect({
-    host: connectionHost,
-    port: connectionPort,
-    user: username,
-    password: password,
-    database: database,
-    connectionTimeout: CONNECTION_TIMEOUT,
-  });
-
   console.log(`Connecting to MSSQL URI: mssql://<REDACTED>:<REDACTED>@${connectionHost}:${connectionPort}/${database}`);
 
   try {
     // Attempt to connect to MSSQL within the defined timeout
-    await client.connect();
+    const client = await sql.connect({
+      user: username,
+      password: password,
+      server: connectionHost,
+      port: connectionPort,
+      database: database,
+      connectionTimeout: CONNECTION_TIMEOUT,
+      options: {
+        encrypt: true,
+        trustServerCertificate: true
+      }
+    });
+
     console.log('MSSQL connection successful');
     return client;
   } catch (error) {
@@ -196,15 +199,15 @@ export const handler = async (req, res) => {
 
     // Execute the provided query in the MSSQL instance
     var data = [];
-    const [rows] = await client.execute(query);
+    const result = await client.request().query(query);
 
     // Return rows for SELECT queries
-    if (rows && rows.length > 0) {
-      data = rows;
-    } else if (rows && 'affectedRows' in rows) { // For write queries (INSERT, UPDATE, DELETE), check affected rows
+    if (result.recordset && result.recordset.length > 0) {
+      data = result.recordset;
+    } else if (result.rowsAffected && result.rowsAffected.length > 0) { // For write queries (INSERT, UPDATE, DELETE), check affected rows
       data = {
-        affectedRows: rows.affectedRows || 0,
-        message: rows.info || 'Query executed successfully',
+        affectedRows: result.rowsAffected[0] || 0,
+        message: result.command || 'Query executed successfully',
       };
     }
 

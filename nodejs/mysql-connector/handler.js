@@ -51,7 +51,7 @@ const validateRequestBody = ({ query, secretData }) => {
 
   // Throw error if any validation fails
   if (errors.length) {
-    msg = `Validation errors: ${errors.join(' ')}`
+    var msg = `Validation errors: ${errors.join(' ')}`
     console.log(msg)
     throw new Error(msg);
   }
@@ -70,20 +70,19 @@ const createMySQLConnection = async (config, localPort = null) => {
   const connectionHost = use_ssh ? '127.0.0.1' : hosts[0]?.host;
   const connectionPort = use_ssh ? localPort : hosts[0]?.port || 5432;
 
-  const client = await mysql.createConnection({
-    host: connectionHost,
-    port: connectionPort,
-    user: username,
-    password: password,
-    database: database,
-    connectTimeout: CONNECTION_TIMEOUT,
-  });
-
   console.log(`Connecting to MySQL URI: mysql://<REDACTED>:<REDACTED>@${connectionHost}:${connectionPort}/${database}`);
 
   try {
     // Attempt to connect to MySQL within the defined timeout
-    await client.connect();
+    const client = await mysql.createConnection({
+      host: connectionHost,
+      port: connectionPort,
+      user: username,
+      password: password,
+      database: database,
+      connectTimeout: CONNECTION_TIMEOUT,
+    });
+
     console.log('MySQL connection successful');
     return client;
   } catch (error) {

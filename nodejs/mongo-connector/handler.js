@@ -52,7 +52,7 @@ const validateRequestBody = ({ query, secretData }) => {
 
   // Throw error if any validation fails
   if (errors.length) {
-    msg = `Validation errors: ${errors.join(' ')}`
+    var msg = `Validation errors: ${errors.join(' ')}`
     console.log(msg)
     throw new Error(msg);
   }

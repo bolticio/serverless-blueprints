@@ -30,7 +30,7 @@ const validateRequestBody = ({ command, key, secretData }) => {
 
   // Throw error if any validation fails
   if (errors.length) {
-    msg = `Validation errors: ${errors.join(' ')}`
+    var msg = `Validation errors: ${errors.join(' ')}`
     console.log(msg)
     throw new Error(msg);
   }
@@ -167,7 +167,7 @@ export const handler = async (req, res) => {
     if (command === "GET") {
       result = await client.get(key);
     } else if (command === "SET") {
-      result = await client.set(key, value, "EX", ttl);
+      result = await client.set(key, value, "EX", ttl || 0);
     }
 
     console.log('Command executed successfully:', JSON.stringify(result));
