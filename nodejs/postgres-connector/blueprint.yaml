@@ -65,7 +65,7 @@ activitySchema: |
                       "name": "query",
                       "meta": {
                           "displayName": "Query",
-                          "displayType": "sql",
+                          "displayType": "code",
                           "placeholder": "SELECT * from example;",
                           "description": "Please provide your query",
                           "validation": {
