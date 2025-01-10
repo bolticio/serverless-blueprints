@@ -1,16 +1,16 @@
-import { MongoClient } from 'mongodb';
+import mysql from 'mysql2/promise';
 import { createTunnel } from 'tunnel-ssh';
 
 // Maximum allowed connections in the connection pool
 const MAX_CONNECTIONS = parseInt(process.env.MAX_CONNECTIONS || '10');
 // Connection pool to manage database connections
 const connectionPool = new Map();
-// Timeout for MongoDB connections, configurable via environment variables
+// Timeout for MySQL connections, configurable via environment variables
 const CONNECTION_TIMEOUT = parseInt(process.env.CONNECTION_TIMEOUT || '10000');
 
 /**
  * Validates the request body for required fields and structure.
- * Ensures all necessary fields for MongoDB and SSH configurations are provided.
+ * Ensures all necessary fields for MySQL and SSH configurations are provided.
  * @param {Object} body - Request body containing query and secretData.
  * @throws {Error} If validation fails.
  */
@@ -28,9 +28,8 @@ const validateRequestBody = ({ query, secretData }) => {
     errors.push('secretData.db_config is required.');
   }
 
-  const { hosts, auth_db, database, username, password } = db_config || {};
+  const { hosts, database, username, password } = db_config || {};
   if (!hosts || hosts.length === 0) errors.push('db_config.hosts is required.');
-  if (!auth_db) errors.push('db_config.auth_db is required.');
   if (!database) errors.push('db_config.database is required.');
   if (!username) errors.push('db_config.username is required.');
   if (!password) errors.push('db_config.password is required.');
@@ -59,34 +58,36 @@ const validateRequestBody = ({ query, secretData }) => {
 };
 
 /**
- * Creates a MongoDB connection with a timeout for connection attempts.
- * Handles connection strings for both direct and SRV-based connections.
- * @param {Object} config - Configuration for MongoDB.
+ * Creates a MySQL connection with a timeout for connection attempts.
+ * @param {Object} config - Configuration for MySQL.
  * @param {number} [localPort=null] - Local port for SSH tunneling.
- * @returns {Promise<Object>} The MongoDB database instance.
+ * @returns {Promise<Client>} The MySQL client instance.
  */
-const createMongoConnection = async (config, localPort = null) => {
+const createMySQLConnection = async (config, localPort = null) => {
   const { use_ssh } = config.secretData;
-  const { username, password, auth_db, database, hosts, read_preference, is_srv } = config.secretData.db_config;
+  const { username, password, hosts, database } = config.secretData.db_config;
 
-  const host = use_ssh ? '127.0.0.1' : hosts[0]?.host;
-  const port = use_ssh ? localPort : hosts[0]?.port || 27017;
-  const connectionString = is_srv
-    ? `mongodb+srv://${username}:${encodeURIComponent(password)}@${host}/${auth_db}?directConnection=true&readPreference=${read_preference}`
-    : `mongodb://${username}:${encodeURIComponent(password)}@${host}:${port}/${auth_db}?directConnection=true&readPreference=${read_preference}`;
+  const connectionHost = use_ssh ? '127.0.0.1' : hosts[0]?.host;
+  const connectionPort = use_ssh ? localPort : hosts[0]?.port || 5432;
 
-  console.log(`Connecting to MongoDB URI: ${connectionString.replace(username, "<REDACTED>").replace(encodeURIComponent(password), "<REDACTED>")}`);
+  const client = await mysql.createConnection({
+    host: connectionHost,
+    port: connectionPort,
+    user: username,
+    password: password,
+    database: database,
+    connectTimeout: CONNECTION_TIMEOUT,
+  });
 
-  // MongoDB client instance
-  const client = new MongoClient(connectionString, { serverSelectionTimeoutMS: CONNECTION_TIMEOUT });
+  console.log(`Connecting to MySQL URI: mysql://<REDACTED>:<REDACTED>@${connectionHost}:${connectionPort}/${database}`);
 
   try {
-    // Attempt to connect to MongoDB within the defined timeout
+    // Attempt to connect to MySQL within the defined timeout
     await client.connect();
-    console.log('MongoDB connection successful.');
-    return client.db(database);
+    console.log('MySQL connection successful');
+    return client;
   } catch (error) {
-    console.error(`MongoDB connection failed: ${error.message}`);
+    console.error(`MySQL connection failed: ${error.message}`);
     throw error;
   }
 };
@@ -134,8 +135,8 @@ const createSSHTunnel = async (sshConfig, dbHost, dbPort) => {
  * Retrieves an existing connection or creates a new one if not available.
  * Ensures that the number of active connections does not exceed the allowed limit.
  * @param {Object} config - Configuration for the connection.
- * @param {string} query - MongoDB query to execute.
- * @returns {Promise<Object>} The MongoDB database instance.
+ * @param {string} query - MySQL query to execute.
+ * @returns {Promise<Client>} The MySQL client instance.
  */
 const getOrCreateConnection = async (config, query) => {
   const configKey = JSON.stringify(config);
@@ -158,11 +159,11 @@ const getOrCreateConnection = async (config, query) => {
       ? await (async () => {
         const { host: dbHost, port: dbPort } = db_config.hosts[0];
         const { tunnel, localPort } = await createSSHTunnel(ssh_config, dbHost, dbPort);
-        const mongoConnection = await createMongoConnection(config, localPort);
-        mongoConnection._tunnel = tunnel; // Store tunnel instance for cleanup
-        return mongoConnection;
+        const mySQLConnection = await createMySQLConnection(config, localPort);
+        mySQLConnection._tunnel = tunnel; // Store tunnel instance for cleanup
+        return mySQLConnection;
       })()
-      : await createMongoConnection(config);
+      : await createMySQLConnection(config);
 
     // Cache the newly created connection
     connectionPool.set(configKey, connection);
@@ -175,7 +176,7 @@ const getOrCreateConnection = async (config, query) => {
 
 /**
  * Express.js handler for incoming requests.
- * Processes MongoDB queries based on provided configurations and query string.
+ * Processes MySQL queries based on provided configurations and query string.
  * @param {Object} req - Express request object.
  * @param {Object} res - Express response object.
  */
@@ -191,15 +192,25 @@ export const handler = async (req, res) => {
     validateRequestBody(body);
 
     const { query, secretData } = body;
-    const db = await getOrCreateConnection({ secretData }, query);
+    const client = await getOrCreateConnection({ secretData }, query);
 
-    // Execute the provided query in the MongoDB instance
-    const executeCommand = new Function('db', `return ${query}`);
-    const result = await executeCommand(db);
+    // Execute the provided query in the MySQL instance
+    var data = [];
+    const [rows] = await client.execute(query);
 
-    console.log('Query executed successfully:', JSON.stringify(result));
+    // Return rows for SELECT queries
+    if (rows && rows.length > 0) {
+      data = rows;
+    } else if (rows && 'affectedRows' in rows) { // For write queries (INSERT, UPDATE, DELETE), check affected rows
+      data = {
+        affectedRows: rows.affectedRows || 0,
+        message: rows.info || 'Query executed successfully',
+      };
+    }
+
+    console.log('Query executed successfully:', JSON.stringify(data));
     res.setHeader('Content-Type', 'application/json');
-    res.status(200).json(result);
+    res.status(200).json(data);
   } catch (error) {
     console.error('Error handling request:', error.message);
     res.status(500).json({ error: error.message });

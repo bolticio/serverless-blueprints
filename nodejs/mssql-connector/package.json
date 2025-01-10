@@ -1,0 +1,19 @@
+{
+    "name": "boltic-mssql-connector",
+    "version": "1.0.0",
+    "description": "The MSSQL connector enables seamless integration with any MSSQL database, allowing you to perform various operations efficiently.",
+    "main": "handler.js",
+    "scripts": {
+        "start": "node handler.js"
+    },
+    "dependencies": {
+        "mssql": "^11.0.1",
+        "tunnel-ssh": "^5.1.2"
+    },
+    "engines": {
+        "node": ">=16.0.0"
+    },
+    "author": "Your Name",
+    "license": "MIT",
+    "type": "module"
+}

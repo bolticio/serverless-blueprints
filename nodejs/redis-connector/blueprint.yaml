@@ -32,70 +32,121 @@ envs:
 icon: https://cdn.pixelbin.io/v2/fyndcloud/original/Temporal/Uploads/fcz0/undefined/images/ic_reddis_1714397917082.svg
 activitySchema: |
   [
-      {
-          "name": "secret",
-          "meta": {
-              "displayName": "Redis Integration",
-              "displayType": "autocomplete",
-              "placeholder": "Select Redis Integration",
-              "description": "Redis is a secure partner with Boltic. Your credentials are encrypted & can be removed at any time.",
-              "options": [],
-              "config": {
-                  "urlType": "secret",
-                  "method": "get",
-                  "url": "/REDIS?current_page=1&page_size=999",
-                  "labelKey": "name",
-                  "valueKey": "_id"
-              },
-              "htmlProps": {
-                  "showAddNew": true
-              },
-              "value": "",
-              "validation": {
-                  "required": true
-              }
-          }
-      },
-      {
-          "name": "body",
-          "meta": {
-              "displayType": "object",
-              "children": [
-                  {
-                      "name": "command",
-                      "meta": {
-                          "displayName": "Command",
-                          "displayType": "code",
-                          "placeholder": "GET/SET",
-                          "description": "Please provide your command to run",
-                          "validation": {
-                              "required": true
-                          },
-                          "htmlProps": {
-                              "fullscreen": true,
-                              "language": "json",
-                              "size": "md"
-                          }
-                      }
-                  },
-                  {
-                      "name": "args",
-                      "meta": {
-                          "displayName": "Arguments",
-                          "displayType": "code",
-                          "placeholder": "KEY1 VALUE1",
-                          "description": "Please provide your arguments for the command",
-                          "validation": {
-                              "required": true
-                          },
-                          "htmlProps": {
-                              "fullscreen": true,
-                              "language": "json",
-                              "size": "md"
-                          }
-                      }
-                  }
-              ]
-          }
-      }
+    {
+        "name": "secret",
+        "meta": {
+        "displayName": "Redis Integration",
+        "displayType": "autocomplete",
+        "placeholder": "Select Redis Integration",
+        "description": "Redis is a secure partner with Boltic. Your credentials are encrypted & can be removed at any time.",
+        "options": [],
+        "config": {
+            "urlType": "secret",
+            "method": "get",
+            "url": "/REDIS?current_page=1&page_size=999",
+            "labelKey": "name",
+            "valueKey": "_id"
+        },
+        "htmlProps": {
+            "showAddNew": true
+        },
+        "value": "",
+        "validation": {
+            "required": true
+        }
+        }
+    },
+    {
+        "name": "body",
+        "meta": {
+        "displayType": "object",
+        "children": [
+            {
+            "name": "command",
+            "meta": {
+                "displayName": "Command",
+                "displayType": "select",
+                "placeholder": "Select Command",
+                "description": "Please provide your command to run",
+                "validation": {
+                "required": true
+                },
+                "options": [
+                {
+                    "label": "GET",
+                    "value": "GET"
+                },
+                {
+                    "label": "SET",
+                    "value": "SET"
+                }
+                ]
+            }
+            },
+            {
+            "name": "key",
+            "meta": {
+                "displayName": "Key",
+                "displayType": "text",
+                "placeholder": "KEY1",
+                "description": "Please provide key for the command",
+                "validation": {
+                "required": true
+                },
+                "htmlProps": {
+                "fullscreen": true,
+                "language": "sql",
+                "size": "md"
+                }
+            }
+            },
+            {
+            "name": "value",
+            "meta": {
+                "displayName": "Value",
+                "displayType": "textarea",
+                "placeholder": "Enter the value",
+                "description": "Please provide the value to be set",
+                "validation": {
+                "required": true
+                },
+                "dependencies": {
+                "conditions": [
+                    {
+                    "field": "body.command",
+                    "operator": "EQUALS",
+                    "value": "SET"
+                    }
+                ]
+                },
+                "htmlProps": {
+                "minRows": 1,
+                "maxRows": 10
+                }
+            }
+            },
+            {
+            "name": "ttl",
+            "meta": {
+                "displayName": "TTL",
+                "displayType": "number",
+                "placeholder": "Enter TTL",
+                "description": "Please provide TTL, if not set data will be stored indefinitely",
+                "validation": {
+                "required": false
+                },
+                "dependencies": {
+                "conditions": [
+                    {
+                    "field": "body.command",
+                    "operator": "EQUALS",
+                    "value": "SET"
+                    }
+                ]
+                }
+            }
+            }
+        ]
+        }
+    }
   ]

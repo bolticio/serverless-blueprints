@@ -1,3 +1,3 @@
-# MongoDB Connector
+# PostgreSQL Connector
 
-The MongoDB connector enables seamless integration with any MongoDB database, allowing you to perform various operations efficiently.
+The PostgreSQL connector enables seamless integration with any PostgreSQL database, allowing you to perform various operations efficiently.

@@ -14,24 +14,25 @@ const CONNECTION_TIMEOUT = parseInt(process.env.CONNECTION_TIMEOUT || '10000');
  * @param {Object} body - Request body containing Redis commands and secretData.
  * @throws {Error} If validation fails.
  */
-const validateRequestBody = ({ command, secretData }) => {
+const validateRequestBody = ({ command, key, secretData }) => {
   const errors = [];
 
   // Ensure the Redis command is provided
-  if (!command) {
-    errors.push('Redis command is required.');
-  }
+  if (!command) errors.push('Redis command is required.');
+  if (!key) errors.push('Key is required for selected command.');
 
   // Validate Redis configuration
   const { host, port, database_number, password } = secretData || {};
 
   if (!host) errors.push('db_config.host is required.');
   if (!port) errors.push('db_config.port is required.');
-  if (!database_number) errors.push('db_config.port is required.');
+  if (database_number === "") errors.push('db_config.database_number is required.');
 
   // Throw error if any validation fails
   if (errors.length) {
-    throw new Error(`Validation errors: ${errors.join(' ')}`);
+    msg = `Validation errors: ${errors.join(' ')}`
+    console.log(msg)
+    throw new Error(msg);
   }
 };
 
@@ -159,15 +160,19 @@ export const handler = async (req, res) => {
     const body = req.body;
     validateRequestBody(body);
 
-    const { command, args, secretData } = body;
+    const { command, key, value, ttl, secretData } = body;
     const client = await getOrCreateConnection({ secretData });
 
-    // Execute the provided Redis command
-    const result = await client.call(command, ...(args || []));
+    var result
+    if (command === "GET") {
+      result = await client.get(key);
+    } else if (command === "SET") {
+      result = await client.set(key, value, "EX", ttl);
+    }
 
     console.log('Command executed successfully:', JSON.stringify(result));
     res.setHeader('Content-Type', 'application/json');
-    res.status(200).json({ result });
+    res.status(200).json(result);
   } catch (error) {
     console.error('Error handling request:', error.message);
     res.status(500).json({ error: error.message });

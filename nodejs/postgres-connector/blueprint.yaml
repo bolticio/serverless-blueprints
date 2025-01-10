@@ -29,7 +29,7 @@ envs:
     short_description: Timeout for DB connections
     type: number
     default: "Enter connection timeout"
-icon: https://cdn.pixelbin.io/v2/fyndcloud/original/Temporal/Uploads/fcz0/c7d5096b-e8dd-4520-b1b9-0e4e01b839ab/images/PostgreSQL-Logo.wine_1734043293430.svg
+icon: https://cdn.pixelbin.io/v2/fyndcloud/original/Temporal/Uploads/bolt/undefined/images/postgres_1730110185953.png
 activitySchema: |
   [
       {
@@ -65,7 +65,7 @@ activitySchema: |
                       "name": "query",
                       "meta": {
                           "displayName": "Query",
-                          "displayType": "code",
+                          "displayType": "sql",
                           "placeholder": "SELECT * from example;",
                           "description": "Please provide your query",
                           "validation": {
@@ -73,7 +73,7 @@ activitySchema: |
                           },
                           "htmlProps": {
                               "fullscreen": true,
-                              "language": "json",
+                              "language": "sql",
                               "size": "md"
                           }
                       }

@@ -1,3 +1,3 @@
-# MongoDB Connector
+# Redis Connector
 
-The MongoDB connector enables seamless integration with any MongoDB database, allowing you to perform various operations efficiently.
+The Redis connector enables seamless integration with any Redis database, allowing you to perform various operations efficiently.

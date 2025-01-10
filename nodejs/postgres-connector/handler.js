@@ -51,7 +51,9 @@ const validateRequestBody = ({ query, secretData }) => {
 
   // Throw error if any validation fails
   if (errors.length) {
-    throw new Error(`Validation errors: ${errors.join(' ')}`);
+    msg = `Validation errors: ${errors.join(' ')}`
+    console.log(msg)
+    throw new Error(msg);
   }
 };
 
@@ -193,11 +195,22 @@ export const handler = async (req, res) => {
     const client = await getOrCreateConnection({ secretData }, query);
 
     // Execute the provided query in the PostgreSQL instance
+    var data = [];
     const result = await client.query(query);
 
-    console.log('Query executed successfully:', JSON.stringify(result.rows));
+    // If result contains rows, it is a SELECT query
+    if (result.rows && result.rows.length > 0) {
+      data = result.rows;
+    } else if (result.rowCount) { // For write queries (INSERT, UPDATE, DELETE), check affected rows
+      data = {
+        affectedRows: result.rowCount || 0,
+        message: result.command || 'Query executed successfully.',
+      };
+    }
+
+    console.log('Query executed successfully:', JSON.stringify(data));
     res.setHeader('Content-Type', 'application/json');
-    res.status(200).json(result.rows);
+    res.status(200).json(data);
   } catch (error) {
     console.error('Error handling request:', error.message);
     res.status(500).json({ error: error.message });
