@@ -167,7 +167,7 @@ export const handler = async (req, res) => {
     if (command === "GET") {
       result = await client.get(key);
     } else if (command === "SET") {
-      result = await client.set(key, value, "EX", ttl || 0);
+      result = ttl ? await client.set(key, value, "EX", ttl) : await client.set(key, value);
     }
 
     console.log('Command executed successfully:', JSON.stringify(result));
