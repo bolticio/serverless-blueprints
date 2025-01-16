@@ -1,18 +1,18 @@
-# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# SYSTEM MANAGED, DO NOT NOT EDIT,
 # Metadata for the project
-title: "Delayed Execution" 
-tags: 
+title: "Delayed Execution"
+tags:
   - python
   - timeout
 description: Blueprint to delay request execution using timeouts
 language:
   name: python
-  version: "3"
+  version: "3.12"
   title: Python
 version: 0.1.0
 blueprint: true
 handler: handler.py
-section: 
+section:
   title: "Getting Started"
   slug: getting-started
   position: 1

@@ -8,7 +8,7 @@ tags:
 description: Demonstrates running an external process using the Python subprocess module.
 language:
   name: python
-  version: "3"
+  version: "3.12"
   title: Python
 version: 0.1.0
 blueprint: true

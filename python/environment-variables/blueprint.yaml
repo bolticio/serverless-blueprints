@@ -1,17 +1,17 @@
-# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# SYSTEM MANAGED, DO NOT NOT EDIT,
 # Metadata for the project
 title: "Environment Variables"
-tags: 
+tags:
   - python
 description: Demonstrates how to use environment variables within a serverless function
 language:
   name: python
-  version: "3"
+  version: "3.12"
   title: Python
 version: 0.1.0
 blueprint: true
 handler: handler.py
-section: 
+section:
   title: "Getting Started"
   slug: getting-started
   position: 1

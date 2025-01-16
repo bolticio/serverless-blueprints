@@ -1,18 +1,18 @@
-# SYSTEM MANAGED, DO NOT NOT EDIT, 
+# SYSTEM MANAGED, DO NOT NOT EDIT,
 # Metadata for the project
 title: "HTTP connection pooling"
-tags: 
+tags:
   - python
   - http
 description: Shows how to recycle HTTP connections using HTTP connection pools.
 language:
   name: python
-  version: "3"
+  version: "3.12"
   title: Python
 version: 0.1.0
 blueprint: true
 handler: handler.py
-section: 
+section:
   title: "External Integrations"
   slug: external-integrations
   position: 2
