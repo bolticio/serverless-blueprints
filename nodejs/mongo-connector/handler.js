@@ -67,7 +67,7 @@ const validateRequestBody = ({ query, secretData }) => {
  */
 const createMongoConnection = async (config, localPort = null) => {
   const { use_ssh } = config.secretData;
-  const { username, password, auth_db, database, hosts, read_preference, is_srv } = config.secretData.db_config;
+  const { username, password, auth_db, database, hosts, read_preference = 'secondaryPreferred', is_srv } = config.secretData.db_config;
 
   const host = use_ssh ? '127.0.0.1' : hosts[0]?.host;
   const port = use_ssh ? localPort : hosts[0]?.port || 27017;
