@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import { createTunnel } from 'tunnel-ssh';
 
 // Maximum allowed connections in the connection pool
@@ -7,6 +7,8 @@ const MAX_CONNECTIONS = parseInt(process.env.MAX_CONNECTIONS || '10');
 const connectionPool = new Map();
 // Timeout for MongoDB connections, configurable via environment variables
 const CONNECTION_TIMEOUT = parseInt(process.env.CONNECTION_TIMEOUT || '10000');
+// Maximum limit for query results to prevent large responses
+const MAX_QUERY_LIMIT = parseInt(process.env.MAX_QUERY_LIMIT || '1000');
 
 /**
  * Validates the request body for required fields and structure.
@@ -174,6 +176,54 @@ const getOrCreateConnection = async (config, query) => {
 };
 
 /**
+ * Executes a MongoDB query on the provided connection.
+ * Transforms the query string to use the MongoDB collection method if necessary.
+ * Handles different types of MongoDB operations and returns the result.
+ *
+ * @param {string} query - The MongoDB query string to execute.
+ * @param {Object} connection - The MongoDB connection object.
+ * @param {number} [limit=100] - The maximum number of documents to return for queries that return a cursor.
+ * @returns {Promise<Array|Object>} The result of the query execution. For queries that return a cursor, returns an array of documents. For other operations, returns the result object.
+ * @throws {Error} If the query is invalid or if an error occurs during query execution.
+ */
+const runQuery = async (query, connection, limit = 100) => {
+  if (query && typeof query === 'string') {
+    if (query.startsWith('db.') && !query.includes('collection')) {
+      // Extract collection name and method name
+      const parts = query.split('.').slice(1); // Extract parts after 'db.'
+
+      if (parts.length >= 2) {
+        const collectionPart = parts[0]; // The collection name
+        const methodWithParams = parts.slice(1).join('.'); // The rest, which includes method and params
+
+        // Transform query to `db.collection('collectionPart').methodWithParams`
+        query = `db.collection('${collectionPart}').${methodWithParams}`;
+      }
+    }
+
+    console.log('Executing query:', JSON.stringify(query));
+    try {
+      const executeCommand = new Function('db', 'ObjectId', `return ${query.replace(/ObjectId\(/g, 'new ObjectId(')}`);
+      // Pass `ObjectId` from the `mongodb` library to the function
+      const result = await executeCommand(connection, ObjectId);
+      // Handle result based on query type
+      if (result && typeof result.toArray === 'function') {
+        // For queries that return a cursor (e.g., find)
+        return result.toArray().then((data) => data.slice(0, limit));
+      } else {
+        // For other operations (e.g., countDocuments, aggregate, insert, update)
+        return result || [];
+      }
+    } catch (error) {
+      console.error('Error executing query:', error.message);
+      throw error;
+    }
+  } else {
+    throw new Error("Invalid query", query);
+  }
+};
+
+/**
  * Express.js handler for incoming requests.
  * Processes MongoDB queries based on provided configurations and query string.
  * @param {Object} req - Express request object.
@@ -194,8 +244,7 @@ export const handler = async (req, res) => {
     const db = await getOrCreateConnection({ secretData }, query);
 
     // Execute the provided query in the MongoDB instance
-    const executeCommand = new Function('db', `return ${query}`);
-    const result = await executeCommand(db);
+    const result = await runQuery(query, db, MAX_QUERY_LIMIT);
 
     console.log('Query executed successfully:', JSON.stringify(result));
     res.setHeader('Content-Type', 'application/json');

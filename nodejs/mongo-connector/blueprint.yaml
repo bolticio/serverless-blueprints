@@ -30,6 +30,11 @@ envs:
     short_description: Timeout for DB connections
     type: number
     default: "Enter connection timeout"
+  - name: MAX_QUERY_LIMIT
+    description: Maximum number of documents to return in a single query
+    short_iption: Max query limit
+    type: number
+    default: "Enter max query limit"
 icon: "https://cdn.pixelbin.io/v2/fyndcloud/original/Temporal/Uploads/fcz0/c7d5096b-e8dd-4520-b1b9-0e4e01b839ab/images/png-transparent-mongodb-original-logo-icon-thumbnail_1733730330381.png"
 activitySchema: |
   [
