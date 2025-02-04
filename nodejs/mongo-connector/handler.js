@@ -2,13 +2,13 @@ import { MongoClient, ObjectId } from 'mongodb';
 import { createTunnel } from 'tunnel-ssh';
 
 // Maximum allowed connections in the connection pool
-const MAX_CONNECTIONS = parseInt(process.env.MAX_CONNECTIONS || '10');
+const MAX_CONNECTIONS = parseInt(process.env.MAX_CONNECTIONS) || 10;
 // Connection pool to manage database connections
 const connectionPool = new Map();
-// Timeout for MongoDB connections, configurable via environment variables
-const CONNECTION_TIMEOUT = parseInt(process.env.CONNECTION_TIMEOUT || '10000');
+// Timeout for connections, configurable via environment variables
+const CONNECTION_TIMEOUT = parseInt(process.env.CONNECTION_TIMEOUT) || 10000;
 // Maximum limit for query results to prevent large responses
-const MAX_QUERY_LIMIT = parseInt(process.env.MAX_QUERY_LIMIT || '1000');
+const MAX_QUERY_LIMIT = parseInt(process.env.MAX_QUERY_LIMIT) || 1000;
 
 /**
  * Validates the request body for required fields and structure.
@@ -209,6 +209,7 @@ const runQuery = async (query, connection, limit = 100) => {
       // Handle result based on query type
       if (result && typeof result.toArray === 'function') {
         // For queries that return a cursor (e.g., find)
+        console.log(`Limiting to only ${limit} results`)
         return result.toArray().then((data) => data.slice(0, limit));
       } else {
         // For other operations (e.g., countDocuments, aggregate, insert, update)

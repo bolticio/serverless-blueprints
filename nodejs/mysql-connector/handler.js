@@ -2,11 +2,13 @@ import mysql from 'mysql2/promise';
 import { createTunnel } from 'tunnel-ssh';
 
 // Maximum allowed connections in the connection pool
-const MAX_CONNECTIONS = parseInt(process.env.MAX_CONNECTIONS || '10');
+const MAX_CONNECTIONS = parseInt(process.env.MAX_CONNECTIONS) || 10;
 // Connection pool to manage database connections
 const connectionPool = new Map();
-// Timeout for MySQL connections, configurable via environment variables
-const CONNECTION_TIMEOUT = parseInt(process.env.CONNECTION_TIMEOUT || '10000');
+// Timeout for connections, configurable via environment variables
+const CONNECTION_TIMEOUT = parseInt(process.env.CONNECTION_TIMEOUT) || 10000;
+// Maximum limit for query results to prevent large responses
+const MAX_QUERY_LIMIT = parseInt(process.env.MAX_QUERY_LIMIT) || 1000;
 
 /**
  * Validates the request body for required fields and structure.
