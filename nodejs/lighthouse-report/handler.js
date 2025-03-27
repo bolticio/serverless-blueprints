@@ -89,6 +89,18 @@ async function runLighthouse({ url, timeout = DEFAULT_TIMEOUT_IN_SECONDS, device
     const runnerResult = await lighthouse(url, options);
     const reportHtml = runnerResult.report;
 
+    // Extract performance metrics from the lighthouse results
+    const metrics = {
+      firstContentfulPaint: runnerResult.lhr.audits['first-contentful-paint'].numericValue,
+      largestContentfulPaint: runnerResult.lhr.audits['largest-contentful-paint'].numericValue,
+      speedIndex: runnerResult.lhr.audits['speed-index'].numericValue,
+      totalBlockingTime: runnerResult.lhr.audits['total-blocking-time'].numericValue,
+      cumulativeLayoutShift: runnerResult.lhr.audits['cumulative-layout-shift'].numericValue,
+      // Convert milliseconds to seconds for better readability
+      timeToInteractive: runnerResult.lhr.audits['interactive'].numericValue,
+      performanceScore: runnerResult.lhr.categories.performance.score * 100
+    };
+
     // Generate PDF directly without saving HTML first
     page = await browser.newPage();
     await page.setContent(reportHtml, {
@@ -120,9 +132,20 @@ async function runLighthouse({ url, timeout = DEFAULT_TIMEOUT_IN_SECONDS, device
     }
 
     return {
-      // Uncomment if needed
-      // html: reportHtml,
-      pdf: pdfBuffer.toString('base64')
+      reports: {
+        // Uncomment if needed
+        // html: reportHtml.toString('base64'),
+        pdf: pdfBuffer.toString('base64'),
+      },
+      metrics: {
+        firstContentfulPaint: Number((metrics.firstContentfulPaint / 1000).toFixed(2)),
+        largestContentfulPaint: Number((metrics.largestContentfulPaint / 1000).toFixed(2)),
+        speedIndex: Number((metrics.speedIndex / 1000).toFixed(2)),
+        totalBlockingTime: Number(metrics.totalBlockingTime.toFixed(2)),
+        cumulativeLayoutShift: Number(metrics.cumulativeLayoutShift.toFixed(3)),
+        timeToInteractive: Number((metrics.timeToInteractive / 1000).toFixed(2)),
+        performanceScore: Number(metrics.performanceScore.toFixed(0)),
+      }
     };
 
   } catch (error) {
@@ -164,7 +187,10 @@ export const handler = async (req, res) => {
 
     // Send the result
     res.setHeader('Content-Type', 'application/json');
-    res.status(200).json(result);
+    res.status(200).json({
+      ...result,
+      executionTime: Number(elapsedTime.toFixed(3))
+    });
   } catch (error) {
     console.error('Error handling request:', error.message);
     res.status(500).json({ error: error.message });
