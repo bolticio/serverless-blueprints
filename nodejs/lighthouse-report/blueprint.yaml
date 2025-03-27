@@ -7,7 +7,7 @@ tags:
   - page-load-performance
   - lighthouse
   - nodejs
-description: Analyze
+description: Analyze web apps and web pages using Lighthouse to collect modern performance metrics and gain insights into developer best practices.
 language:
   name: nodejs
   version: "20"
