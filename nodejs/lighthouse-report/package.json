@@ -1,0 +1,19 @@
+{
+    "name": "boltic-lighthouse-report",
+    "version": "1.0.0",
+    "description": "Analyze web apps and web pages using Lighthouse to collect modern performance metrics and gain insights into developer best practices.",
+    "main": "handler.js",
+    "scripts": {
+        "start": "node handler.js"
+    },
+    "dependencies": {
+        "@playwright/test": "^1.51.1",
+        "lighthouse": "^12.5.1"
+    },
+    "engines": {
+        "node": ">=16.0.0"
+    },
+    "author": "Boltic",
+    "license": "MIT",
+    "type": "module"
+}

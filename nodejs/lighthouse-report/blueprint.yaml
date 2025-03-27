@@ -1,0 +1,146 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT,
+# Metadata for the project
+title: "Lighthouse Report"
+tags:
+  - synthetic-monitoring
+  - performance
+  - page-load-performance
+  - lighthouse
+  - nodejs
+description: Analyze
+language:
+  name: nodejs
+  version: "20"
+  title: NodeJS
+version: 0.1.0
+blueprint: true
+handler: handler.js
+section:
+  title: "IT Automation"
+  slug: it-automation
+  position: 4
+envs:
+  - name: BROWSER_PORT
+    description: Port on which browser will run
+    short_description: Browser port
+    type: number
+    default: "Enter browser port"
+  - name: LOG_LEVEL
+    description: Log level for the application
+    short_description: Log level
+    type: string
+    default: "Enter log level. Valid values are: info, debug, warn, error"
+icon: "https://cdn.pixelbin.io/v2/fyndcloud/original/Temporal/Uploads/bolt/undefined/images/google-lighthouse-icon-may-2019_1743082350309.svg"
+activitySchema: |
+  [
+      {
+          "name": "body",
+          "meta": {
+              "displayType": "object",
+              "validation": {
+                  "required": true
+              },
+              "children": [
+                  {
+                      "name": "url",
+                      "schemaType": "body",
+                      "meta": {
+                          "displayType": "url",
+                          "description": "Enter a web page URL",
+                          "placeholder": "https://example.com",
+                          "displayName": "URL",
+                          "validation": {
+                              "required": true
+                          },
+                          "htmlProps": {
+                              "overrideDynamicSupport": true,
+                              "allowDynamic": false
+                          }
+                      }
+                  },
+                  {
+                      "name": "timeout",
+                      "meta": {
+                          "displayType": "number",
+                          "displayName": "Timeout",
+                          "placeholder": "Enter timeout",
+                          "description": "Maximum wait time for URL to load",
+                          "validation": {
+                              "required": false
+                          },
+                          "htmlProps": {
+                              "overrideDynamicSupport": true,
+                              "allowDynamic": false
+                          }
+                      },
+                      "schemaType": "body"
+                  },
+                  {
+                      "name": "device",
+                      "meta": {
+                          "displayType": "select",
+                          "displayName": "Device",
+                          "placeholder": "Select a device",
+                          "description": "Choose between mobile or desktop for testing conditions",
+                          "validation": {
+                              "required": false
+                          },
+                          "options": [
+                              {
+                                  "label": "Desktop",
+                                  "value": "Desktop",
+                                  "required": false
+                              },
+                              {
+                                  "label": "Mobile",
+                                  "value": "mobile",
+                                  "required": false
+                              }
+                          ]
+                      },
+                      "schemaType": "body"
+                  },
+                  {
+                      "name": "categories",
+                      "meta": {
+                          "displayType": "multiselect",
+                          "displayName": "Categories",
+                          "placeholder": "Enter value",
+                          "description": "Select which aspects to evaluate",
+                          "validation": {
+                              "required": false
+                          },
+                          "options": [
+                              {
+                                  "label": "Accessibility",
+                                  "value": "accessibility",
+                                  "required": false
+                              },
+                              {
+                                  "label": "Best Practices",
+                                  "value": "best-practices",
+                                  "required": false
+                              },
+                              {
+                                  "label": "Performance",
+                                  "value": "performance",
+                                  "required": false
+                              },
+                              {
+                                  "label": "PWA",
+                                  "value": "pwa",
+                                  "required": false
+                              },
+                              {
+                                  "label": "SEO",
+                                  "value": "seo",
+                                  "required": false
+                              }
+                          ]
+                      },
+                      "schemaType": "body"
+                  }
+              ]
+          }
+      }
+  ]
