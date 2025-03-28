@@ -45,7 +45,7 @@ activitySchema: |
                       "name": "url",
                       "schemaType": "body",
                       "meta": {
-                          "displayType": "url",
+                          "displayType": "text",
                           "description": "Enter a web page URL",
                           "placeholder": "https://example.com",
                           "displayName": "URL",

@@ -4,11 +4,12 @@
     "description": "Analyze web apps and web pages using Lighthouse to collect modern performance metrics and gain insights into developer best practices.",
     "main": "handler.js",
     "scripts": {
-        "start": "node handler.js",
-        "postinstall": "npx playwright install"
+        "start": "node handler.js"
     },
     "dependencies": {
         "@playwright/test": "^1.51.1",
+        "body-parser": "^2.2.0",
+        "express": "^4.21.2",
         "lighthouse": "^12.5.1"
     },
     "engines": {
