@@ -5,7 +5,7 @@
     "main": "handler.js",
     "scripts": {
         "start": "node handler.js",
-        "postinstall": "npx playwright install chromium"
+        "postinstall": "npx playwright install"
     },
     "dependencies": {
         "@playwright/test": "^1.51.1",
