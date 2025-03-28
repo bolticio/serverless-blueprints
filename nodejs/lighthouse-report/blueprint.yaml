@@ -88,7 +88,7 @@ activitySchema: |
                           "options": [
                               {
                                   "label": "Desktop",
-                                  "value": "Desktop",
+                                  "value": "desktop",
                                   "required": false
                               },
                               {

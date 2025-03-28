@@ -4,7 +4,8 @@
     "description": "Analyze web apps and web pages using Lighthouse to collect modern performance metrics and gain insights into developer best practices.",
     "main": "handler.js",
     "scripts": {
-        "start": "node handler.js"
+        "start": "node handler.js",
+        "postinstall": "npx playwright install chromium"
     },
     "dependencies": {
         "@playwright/test": "^1.51.1",
