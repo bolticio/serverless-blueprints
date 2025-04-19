@@ -16,6 +16,9 @@ const LOG_LEVEL = process.env.LOG_LEVEL || "error";
 const BROWSER_PORT = parseInt(process.env.BROWSER_PORT) || 9000;
 // Save reports to disk
 const SAVE_REPORTS_TO_DISK = process.env.SAVE_REPORTS_TO_DISK === 'true';
+// Type of report to generate: pdf or html
+let REPORT_TYPE = process.env.REPORT_TYPE || "pdf";
+REPORT_TYPE = REPORT_TYPE.toLowerCase();
 // Default timeout for Lighthouse
 const DEFAULT_TIMEOUT_IN_SECONDS = parseInt(process.env.DEFAULT_TIMEOUT_IN_SECONDS) || 60;
 // Evaluation Categories
@@ -46,6 +49,11 @@ export const handler = async (req, res) => {
     // Ensure the request method is POST
     if (req.method !== 'POST') {
       return res.status(400).json({ error: 'Invalid method, only POST allowed.' });
+    }
+
+    // Validate REPORT_TYPE
+    if (REPORT_TYPE !== "pdf" && REPORT_TYPE !== "html") {
+      return res.status(400).json({ error: `Invalid REPORT_TYPE ${REPORT_TYPE}, only pdf or html allowed.` });
     }
 
     // Extract and validate request body
@@ -196,9 +204,9 @@ async function runLighthouse({ url, timeout = DEFAULT_TIMEOUT_IN_SECONDS, device
 
     return {
       reports: {
-        // Uncomment if needed
-        // html: reportHtml.toString('base64'),
-        pdf: pdfBuffer.toString('base64'),
+        html: REPORT_TYPE === "html" ? Buffer.from(reportHtml).toString('base64') : "",
+        pdf: REPORT_TYPE === "pdf" ? pdfBuffer.toString('base64') : "",
+        type: REPORT_TYPE
       },
       metrics: {
         firstContentfulPaint: Number((metrics.firstContentfulPaint / 1000).toFixed(2)),
