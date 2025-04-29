@@ -1,0 +1,18 @@
+# SYSTEM MANAGED, DO NOT NOT EDIT,
+# Metadata for the project
+title: "Post Body Size"
+tags:
+  - nodejs
+  - http
+description: Blueprint to calculate the size of the post body and return it.
+language:
+  name: nodejs
+  version: "20"
+  title: NodeJS
+version: 0.1.0
+blueprint: true
+handler: handler.js
+section:
+  title: "Getting Started"
+  slug: getting-started
+  position: 1
