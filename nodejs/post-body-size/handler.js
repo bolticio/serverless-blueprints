@@ -1,8 +1,8 @@
 // Define the handler function
-export const handler = async (event, res) => {
+export const handler = async (req, res) => {
   try {
     // Safely stringify the body if it's an object
-    let bodyRaw = event.body || "";
+    let bodyRaw = req.body || "";
     if (typeof bodyRaw !== "string") {
       bodyRaw = JSON.stringify(bodyRaw);
     }

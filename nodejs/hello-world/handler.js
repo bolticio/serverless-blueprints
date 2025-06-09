@@ -1,5 +1,5 @@
 // Define the handler function
-export const handler = async (event, context) => {
+export const handler = async (req, res) => {
     try {
         // Prepare the response JSON
         const responseJson = {
@@ -7,16 +7,16 @@ export const handler = async (event, context) => {
         };
 
         // Set the response headers
-        context.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Type', 'application/json');
 
         // Send the response JSON
-        context.end(JSON.stringify(responseJson));
+        res.end(JSON.stringify(responseJson));
     } catch (error) {
         // Handle errors
         console.error(error);
         // Send an error response if needed
-        context.statusCode = 500;
-        context.setHeader('Content-Type', 'text/plain');
-        context.end('Internal Server Error');
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'text/plain');
+        res.end('Internal Server Error');
     }
 };

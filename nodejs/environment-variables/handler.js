@@ -1,4 +1,4 @@
-export const handler = async (event, context) => {
+export const handler = async (req, res) => {
   try {
     // Sends 'bar' as response
     res.send(process.env.FOO);
@@ -6,8 +6,8 @@ export const handler = async (event, context) => {
     // Handle errors
     console.error(error);
     // Send an error response if needed
-    context.statusCode = 500;
-    context.setHeader("Content-Type", "text/plain");
-    context.end("Internal Server Error");
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "text/plain");
+    res.end("Internal Server Error");
   }
 };
