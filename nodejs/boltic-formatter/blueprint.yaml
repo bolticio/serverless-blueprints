@@ -18,7 +18,7 @@ section:
   title: "IT Automation"
   slug: it-automation
   position: 4
-icon: "https://cdn-icons-png.flaticon.com/512/337/337946.png"
+  icon: "https://cdn-icons-png.flaticon.com/512/337/337946.png"
 
 activitySchema: |
   [
@@ -136,15 +136,22 @@ activitySchema: |
             "schemaType": "body",
             "meta": {
               "displayName": "Options",
-              "description": "Optional JSON input",
-              "placeholder": "{ \"locale\": \"en-US\" }",
-              "displayType": "code",
-              "htmlProps": {
-                "language": "json"
-              },
+              "description": "Optional object input",
+              "placeholder": "",
+              "displayType": "object",
               "validation": {
-                "required": true
-              }
+                "required": false
+              },
+              "children": [
+                {
+                  "name": "locale",
+                  "meta": {
+                    "displayName": "Locale",
+                    "displayType": "text",
+                    "placeholder": "en-US"
+                  }
+                }
+              ]
             }
           }
         ]
