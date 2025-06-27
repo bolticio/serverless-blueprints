@@ -1,0 +1,153 @@
+title: "Boltic Formatter"
+tags:
+  - text
+  - number
+  - boolean
+  - date
+  - formatter
+  - utils
+description: Perform text, number, date, and boolean formatting operations using a unified API.
+language:
+  name: nodejs
+  version: "20"
+  title: NodeJS
+version: 0.1.0
+blueprint: true
+handler: handler.js
+section:
+  title: "Utilities"
+  slug: utilities
+  position: 5
+icon: "https://cdn-icons-png.flaticon.com/512/337/337946.png"
+
+activitySchema: |
+  [
+    {
+      "name": "body",
+      "meta": {
+        "displayType": "object",
+        "validation": {
+          "required": true
+        },
+        "children": [
+          {
+            "name": "operationGroup",
+            "schemaType": "body",
+            "meta": {
+              "displayName": "Formatter Group",
+              "description": "Choose formatter type",
+              "placeholder": "Select formatter group",
+              "displayType": "select",
+              "options": [
+                { "label": "Text", "value": "text" },
+                { "label": "Number", "value": "number" },
+                { "label": "Date", "value": "date" },
+                { "label": "Boolean", "value": "boolean" }
+              ],
+              "validation": {
+                "required": true
+              }
+            }
+          },
+          {
+            "name": "operation",
+            "schemaType": "body",
+            "meta": {
+              "displayName": "Operation",
+              "description": "Select an operation to perform",
+              "placeholder": "Select operation",
+              "displayType": "select",
+              "validation": {
+                "required": true
+              },
+              "options": [
+                { "label": "— Text —", "value": "", "disabled": true },
+                { "label": "Uppercase", "value": "uppercase" },
+                { "label": "Lowercase", "value": "lowercase" },
+                { "label": "Capitalize", "value": "capitalize" },
+                { "label": "Titlecase", "value": "titlecase" },
+                { "label": "Trim", "value": "trim" },
+                { "label": "Remove Whitespace", "value": "removeWhitespace" },
+                { "label": "Replace", "value": "replace" },
+                { "label": "Slugify", "value": "slugify" },
+                { "label": "Split", "value": "split" },
+                { "label": "Substring", "value": "substring" },
+                { "label": "Length", "value": "length" },
+                { "label": "Starts With", "value": "startsWith" },
+                { "label": "Ends With", "value": "endsWith" },
+                { "label": "Contains", "value": "contains" },
+                { "label": "Base64 Encode", "value": "base64encode" },
+                { "label": "Base64 Decode", "value": "base64decode" },
+                { "label": "Reverse", "value": "reverse" },
+                { "label": "Repeat", "value": "repeat" },
+                { "label": "URL Encode", "value": "url_encode" },
+                { "label": "URL Decode", "value": "url_decode" },
+                { "label": "Word Count", "value": "word_count" },
+                { "label": "Truncate", "value": "truncate" },
+                { "label": "Encode ASCII", "value": "encode_ascii" },
+                { "label": "Default Value", "value": "default_value" },
+                { "label": "Email Extract", "value": "email_extract" },
+                { "label": "Phone Extract", "value": "phone_extract" },
+                { "label": "URL Extract", "value": "url_extract" },
+                { "label": "Number Extract", "value": "number_extract" },
+                { "label": "Regex Extract", "value": "re_extract" },
+                { "label": "HTML to Markdown", "value": "htmlmarkdown" },
+                { "label": "Markdown to HTML", "value": "markdown" },
+                { "label": "Strip HTML", "value": "strip_html" },
+                { "label": "Pluralize", "value": "pluralize" },
+                { "label": "Find Index", "value": "find" },
+                { "label": "Split Into Chunks", "value": "split_into_chunks" },
+                { "label": "Superhero", "value": "superhero" },
+
+                { "label": "— Number —", "value": "", "disabled": true },
+                { "label": "Currency", "value": "currency" },
+                { "label": "Formatting", "value": "formatting" },
+                { "label": "Phone V2", "value": "phone_v2" },
+                { "label": "Math V2", "value": "math_v2" },
+                { "label": "Random Number", "value": "random_number" },
+                { "label": "Spreadsheet Formula", "value": "spreadsheet_formula" },
+
+                { "label": "— Date —", "value": "", "disabled": true },
+                { "label": "Formatting", "value": "formatting" },
+                { "label": "Compare Dates", "value": "compare_dates" },
+                { "label": "Manipulate", "value": "manipulate" },
+
+                { "label": "— Boolean —", "value": "", "disabled": true },
+                { "label": "Invert", "value": "invert" },
+                { "label": "To String", "value": "toString" },
+                { "label": "To Number", "value": "toNumber" }
+              ]
+            }
+          },
+          {
+            "name": "value",
+            "schemaType": "body",
+            "meta": {
+              "displayName": "Value",
+              "placeholder": "Enter input value",
+              "displayType": "text",
+              "validation": {
+                "required": true
+              }
+            }
+          },
+          {
+            "name": "options",
+            "schemaType": "body",
+            "meta": {
+              "displayName": "Options",
+              "description": "Optional JSON input",
+              "placeholder": "{ \"locale\": \"en-US\" }",
+              "displayType": "code",
+              "htmlProps": {
+                "language": "json"
+              },
+              "validation": {
+                "required": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
