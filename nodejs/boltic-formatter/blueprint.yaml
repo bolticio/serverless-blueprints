@@ -15,9 +15,9 @@ version: 0.1.0
 blueprint: true
 handler: handler.js
 section:
-  title: "Utilities"
-  slug: utilities
-  position: 5
+  title: "IT Automation"
+  slug: it-automation
+  position: 7
 icon: "https://cdn-icons-png.flaticon.com/512/337/337946.png"
 
 activitySchema: |
