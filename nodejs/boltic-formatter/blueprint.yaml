@@ -18,8 +18,7 @@ section:
   title: "IT Automation"
   slug: it-automation
   position: 4
-  icon: "https://cdn-icons-png.flaticon.com/512/337/337946.png"
-
+icon: "https://cdn-icons-png.flaticon.com/512/1241/1241538.png"
 activitySchema: |
   [
     {
