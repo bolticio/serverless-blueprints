@@ -1,0 +1,105 @@
+{
+  "sampleTodos": [
+    {
+      "title": "Complete project documentation",
+      "completed": false
+    },
+    {
+      "title": "Review code changes",
+      "completed": true
+    },
+    {
+      "title": "Set up CI/CD pipeline",
+      "completed": false
+    },
+    {
+      "title": "Write unit tests",
+      "completed": false
+    },
+    {
+      "title": "Deploy to staging",
+      "completed": true
+    },
+    {
+      "title": "Update API documentation",
+      "completed": false
+    },
+    {
+      "title": "Fix authentication bug",
+      "completed": true
+    },
+    {
+      "title": "Optimize database queries",
+      "completed": false
+    },
+    {
+      "title": "Add error logging",
+      "completed": false
+    },
+    {
+      "title": "Security audit",
+      "completed": false
+    }
+  ],
+  "curlExamples": {
+    "createTodo": [
+      "curl -X POST http://localhost:3000/todos -H \"Content-Type: application/json\" -d '{\"title\":\"Learn Boltic SDK\",\"completed\":false}'",
+      "curl -X POST http://localhost:3000/todos -H \"Content-Type: application/json\" -d '{\"title\":\"Build awesome app\"}'",
+      "curl -X POST http://localhost:3000/todos -H \"Content-Type: application/json\" -d '{\"title\":\"Deploy to production\",\"completed\":true}'"
+    ],
+    "updateTodo": [
+      "curl -X PATCH http://localhost:3000/todos/YOUR_TODO_ID -H \"Content-Type: application/json\" -d '{\"completed\":true}'",
+      "curl -X PATCH http://localhost:3000/todos/YOUR_TODO_ID -H \"Content-Type: application/json\" -d '{\"title\":\"Updated title\",\"completed\":false}'"
+    ],
+    "getTodos": [
+      "curl http://localhost:3000/todos",
+      "curl \"http://localhost:3000/todos?limit=5&offset=0\"",
+      "curl \"http://localhost:3000/todos?limit=10&offset=10\""
+    ],
+    "getSingleTodo": [
+      "curl http://localhost:3000/todos/YOUR_TODO_ID"
+    ],
+    "deleteTodo": [
+      "curl -X DELETE http://localhost:3000/todos/YOUR_TODO_ID"
+    ]
+  },
+  "testData": {
+    "validRequests": [
+      {
+        "title": "Simple todo",
+        "completed": false
+      },
+      {
+        "title": "Already completed task",
+        "completed": true
+      },
+      {
+        "title": "Todo with spaces and special chars: @#$%",
+        "completed": false
+      },
+      {
+        "title": "Very long todo title that contains a lot of text to test the character limits and ensure that the API can handle longer descriptions without any issues",
+        "completed": false
+      }
+    ],
+    "invalidRequests": [
+      {},
+      {
+        "completed": true
+      },
+      {
+        "title": ""
+      },
+      {
+        "title": null
+      },
+      {
+        "title": 123
+      },
+      {
+        "title": "Valid title",
+        "completed": "not a boolean"
+      }
+    ]
+  }
+} 
