@@ -35,7 +35,7 @@ The `todos` table is created with the following schema:
 
 ### Optional
 
-- `BOLTIC_TABLE_ID`: Table name/slug for CRUD operations (default: `'todos'`)
+- `BOLTIC_TABLE_NAME`: Table name/slug for CRUD operations (default: `'todos'`)
 
 ## API Endpoints
 
@@ -262,7 +262,7 @@ curl -X DELETE https://your-function-url/todos/todo_123
 1. Set the required environment variables:
    ```bash
    export BOLTIC_API_KEY="your-api-key"
-   export BOLTIC_TABLE_ID="todos"  # optional
+   export BOLTIC_TABLE_NAME="todos"  # optional
    ```
 
 2. Deploy the `handler.js` file to your serverless runtime

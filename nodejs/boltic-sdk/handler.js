@@ -2,7 +2,7 @@ import { createClient } from 'boltic-sdk';
 
 // Environment variable validation at module load
 const REQUIRED_ENV_VARS = ['BOLTIC_API_KEY'];
-const OPTIONAL_ENV_VARS = ['BOLTIC_TABLE_ID'];
+const ENVIRONMENT = process.env.ENVIRONMENT || 'uat';
 
 // Validate required environment variables
 for (const envVar of REQUIRED_ENV_VARS) {
@@ -12,7 +12,7 @@ for (const envVar of REQUIRED_ENV_VARS) {
 }
 
 // Default table name if not provided
-const BOLTIC_TABLE_ID = process.env.BOLTIC_TABLE_ID || 'todos';
+const BOLTIC_TABLE_NAME = process.env.BOLTIC_TABLE_NAME || 'todos';
 
 // Initialize Boltic client (global)
 let bolticClient;
@@ -20,7 +20,7 @@ try {
   const clientOptions = {
     debug: false,
     retryAttempts: 3,
-    environment: 'uat'
+    environment: ENVIRONMENT
   };
   
   bolticClient = createClient(process.env.BOLTIC_API_KEY, clientOptions);
@@ -137,17 +137,17 @@ const handleOptions = async (req, res, params, client) => {
 
 // Setup endpoint - creates todos table if it doesn't exist
 const handleSetup = async (req, res, params, client) => {
-    console.log("Setting up table:", BOLTIC_TABLE_ID);
+    console.log("Setting up table:", BOLTIC_TABLE_NAME);
     console.log("Client:", client);
   try {
     // Check if table exists first
     let tableExists = false;
     let table = null;
-    console.log("Finding table by name:", BOLTIC_TABLE_ID);
+    console.log("Finding table by name:", BOLTIC_TABLE_NAME);
     console.log("Client:", client);
     try {
       // Use the correct SDK method to find table by name
-      const response = await client.tables.findByName(BOLTIC_TABLE_ID);
+      const response = await client.tables.findByName(BOLTIC_TABLE_NAME);
       
       if (response.data && !response.error) {
         tableExists = true;
@@ -165,7 +165,7 @@ const handleSetup = async (req, res, params, client) => {
       try {
         // Use the direct tables.create method instead of table builder
         const tableCreateRequest = {
-          name: BOLTIC_TABLE_ID,
+          name: BOLTIC_TABLE_NAME,
           description: 'Todos table for task management',
           fields: [
             {
@@ -242,7 +242,7 @@ const handleGetTodos = async (req, res, params, client) => {
     // Calculate page number (SDK uses page-based pagination)
     const pageNo = Math.floor(offset / limit) + 1;
     
-    const response = await client.records.findAll(BOLTIC_TABLE_ID, {
+    const response = await client.records.findAll(BOLTIC_TABLE_NAME, {
         page: {
           page_no: pageNo,
           page_size: limit,
@@ -274,7 +274,7 @@ const handleGetTodos = async (req, res, params, client) => {
 const handleGetTodo = async (req, res, params, client) => {
   try {
     // Use the correct SDK method to find a record by ID
-    const response = await client.records.findOne(BOLTIC_TABLE_ID, params.id);
+    const response = await client.records.findOne(BOLTIC_TABLE_NAME, params.id);
     
     if (response.error) {
       if (response.error.code?.includes('not_found') || response.error.message?.includes('not found')) {
@@ -319,7 +319,7 @@ const handleCreateTodo = async (req, res, params, client) => {
     };
     
     // Use the correct SDK method to insert a record
-    const response = await client.records.insert(BOLTIC_TABLE_ID, todoData);
+    const response = await client.records.insert(BOLTIC_TABLE_NAME, todoData);
     
     if (response.error) {
       throw new Error(response.error.message || 'Failed to create todo');
@@ -371,7 +371,7 @@ const handleUpdateTodo = async (req, res, params, client) => {
     updateData.updatedAt = new Date().toISOString();
     
     // Use the correct SDK method to update a record by ID
-    const response = await client.records.updateById(BOLTIC_TABLE_ID, params.id, updateData);
+    const response = await client.records.updateById(BOLTIC_TABLE_NAME, params.id, updateData);
     
     if (response.error) {
       if (response.error.code?.includes('not_found') || response.error.message?.includes('not found')) {
@@ -398,7 +398,7 @@ const handleUpdateTodo = async (req, res, params, client) => {
 const handleDeleteTodo = async (req, res, params, client) => {
   try {
     // Use the correct SDK method to delete a record by ID
-    const response = await client.records.deleteById(BOLTIC_TABLE_ID, params.id);
+    const response = await client.records.deleteById(BOLTIC_TABLE_NAME, params.id);
     
     if (response.error) {
       if (response.error.code?.includes('not_found') || response.error.message?.includes('not found')) {

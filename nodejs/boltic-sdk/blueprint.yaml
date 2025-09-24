@@ -14,7 +14,7 @@ environment:
     type: string
   
   # Optional environment variables with defaults
-  BOLTIC_TABLE_ID:
+  BOLTIC_TABLE_NAME:
     description: "Name/ID of the Boltic table to use for todos"
     required: false
     type: string
