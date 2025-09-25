@@ -1,0 +1,26 @@
+title: boltic-contact-us
+description: Serverless "Contact Us" backend powered by the Boltic SDK
+author: "AI Assistant"
+category: "Database"
+language:
+  name: nodejs
+  version: "20"
+  title: NodeJS
+version: 0.1.0
+handler: handler.js
+
+# CORS defaults used by the handler
+cors:
+  allowOrigin: "*"
+  allowMethods: "OPTIONS,GET,POST"
+  allowHeaders: "Content-Type, Authorization"
+
+# Extra metadata for marketplace listings
+metadata:
+  tags:
+    - boltic
+    - database
+    - forms
+    - contact
+    - sdk
+ 
