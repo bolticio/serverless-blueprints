@@ -1,0 +1,24 @@
+{
+  "name": "boltic-contact-us",
+  "version": "1.0.0",
+  "description": "Serverless Contact Us form handler using the @boltic/sdk database client.",
+  "type": "module",
+  "main": "handler.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "LOCAL_TEST=1 node handler.js"
+  },
+  "keywords": [
+    "boltic",
+    "contact",
+    "serverless",
+    "form",
+    "sdk"
+  ],
+  "dependencies": {
+    "@boltic/sdk": "^0.0.2",
+    "dotenv": "^17.2.2"
+  }
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact Us</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="card">
+    <h1>Contact Us</h1>
+    <p class="description">Share your questions or feedback and we will respond as quickly as we can.</p>
+    <form id="contact-form" novalidate>
+      <div class="field">
+        <label for="name">Name *</label>
+        <input id="name" name="name" type="text" placeholder="Jane Doe" autocomplete="name" required />
+      </div>
+      <div class="field">
+        <label for="email">Email *</label>
+        <input id="email" name="email" type="email" placeholder="jane@example.com" autocomplete="email" required />
+      </div>
+      <div class="field">
+        <label for="phone">Phone</label>
+        <input id="phone" name="phone" type="tel" placeholder="Optional" autocomplete="tel" />
+      </div>
+      <div class="field">
+        <label for="message">Message *</label>
+        <textarea id="message" name="message" placeholder="How can we help?" rows="6" required></textarea>
+      </div>
+      <button type="submit">Submit</button>
+      <div id="status" class="status" hidden></div>
+    </form>
+  </main>
+  <script src="/app.js" defer></script>
+</body>
+</html>
