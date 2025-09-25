@@ -1,0 +1,382 @@
+name: boltic-sdk-products-api
+description: A serverless CRUD API for managing products using the Boltic SDK
+version: "1.0.0"
+author: "AI Assistant"
+category: "Database"
+runtime: nodejs18
+
+# Environment variables required for the function
+environment:
+  # Required environment variables
+  BOLTIC_API_KEY:
+    description: "Boltic API key for authentication"
+    required: true
+    type: string
+  
+  # Optional environment variables with defaults
+  BOLTIC_TABLE_NAME:
+    description: "Name/ID of the Boltic table to use for products"
+    required: false
+    type: string
+    default: "products"
+
+# Function configuration
+function:
+  handler: handler.js
+  timeout: 30s
+  memory: 256MB
+  
+# Dependencies
+dependencies:
+  - boltic-sdk
+
+# API endpoints documentation
+endpoints:
+  - method: OPTIONS
+    path: "*"
+    description: "CORS preflight handler for all routes"
+    
+  - method: POST
+    path: "/setup"
+    description: "Create the products table if it doesn't exist (idempotent)"
+    response:
+      success:
+        status: 200
+        schema:
+          type: object
+          properties:
+            data:
+              type: object
+              properties:
+                created:
+                  type: boolean
+                alreadyExisted:
+                  type: boolean
+                table:
+                  type: object
+  
+  - method: GET
+    path: "/products"
+    description: "List all products with pagination and filtering"
+    parameters:
+      query:
+        limit:
+          type: integer
+          default: 20
+          description: "Maximum number of products to return"
+        offset:
+          type: integer
+          default: 0
+          description: "Number of products to skip"
+        category:
+          type: string
+          description: "Filter by product category"
+        active:
+          type: boolean
+          description: "Filter by active status (true/false)"
+    response:
+      success:
+        status: 200
+        schema:
+          type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/schemas/Product"
+            pagination:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                offset:
+                  type: integer
+                total:
+                  type: integer
+  
+  - method: GET
+    path: "/products/{id}"
+    description: "Get a single product by ID"
+    parameters:
+      path:
+        id:
+          type: string
+          description: "Product ID"
+    response:
+      success:
+        status: 200
+        schema:
+          type: object
+          properties:
+            data:
+              $ref: "#/schemas/Product"
+      error:
+        status: 404
+        description: "Product not found"
+  
+  - method: POST
+    path: "/products"
+    description: "Create a new product"
+    requestBody:
+      required: true
+      schema:
+        type: object
+        required:
+          - name
+          - price
+        properties:
+          name:
+            type: string
+            minLength: 1
+            description: "Product name (required, non-empty)"
+          description:
+            type: string
+            description: "Product description"
+          price:
+            type: number
+            minimum: 0
+            description: "Product price (required, non-negative)"
+          category:
+            type: string
+            description: "Product category"
+          stock:
+            type: number
+            minimum: 0
+            default: 0
+            description: "Stock quantity"
+          active:
+            type: boolean
+            default: true
+            description: "Whether the product is active"
+    response:
+      success:
+        status: 201
+        schema:
+          type: object
+          properties:
+            data:
+              $ref: "#/schemas/Product"
+  
+  - method: PATCH
+    path: "/products/{id}"
+    description: "Update an existing product"
+    parameters:
+      path:
+        id:
+          type: string
+          description: "Product ID"
+    requestBody:
+      required: true
+      schema:
+        type: object
+        minProperties: 1
+        properties:
+          name:
+            type: string
+            minLength: 1
+            description: "New product name"
+          description:
+            type: string
+            description: "New product description"
+          price:
+            type: number
+            minimum: 0
+            description: "New product price"
+          category:
+            type: string
+            description: "New product category"
+          stock:
+            type: number
+            minimum: 0
+            description: "New stock quantity"
+          active:
+            type: boolean
+            description: "Whether the product is active"
+    response:
+      success:
+        status: 200
+        schema:
+          type: object
+          properties:
+            data:
+              $ref: "#/schemas/Product"
+      error:
+        status: 404
+        description: "Product not found"
+  
+  - method: DELETE
+    path: "/products/{id}"
+    description: "Delete a product by ID"
+    parameters:
+      path:
+        id:
+          type: string
+          description: "Product ID"
+    response:
+      success:
+        status: 200
+        schema:
+          type: object
+          properties:
+            data:
+              type: object
+              properties:
+                id:
+                  type: string
+                deleted:
+                  type: boolean
+                  const: true
+      error:
+        status: 404
+        description: "Product not found"
+
+# Data schemas
+schemas:
+  Product:
+    type: object
+    properties:
+      id:
+        type: string
+        description: "Unique product identifier"
+      name:
+        type: string
+        description: "Product name"
+      description:
+        type: string
+        description: "Product description"
+      price:
+        type: number
+        description: "Product price"
+      category:
+        type: string
+        description: "Product category"
+      stock:
+        type: number
+        description: "Stock quantity"
+      active:
+        type: boolean
+        description: "Whether the product is active"
+      createdAt:
+        type: string
+        format: date-time
+        description: "When the product was created"
+      updatedAt:
+        type: string
+        format: date-time
+        description: "When the product was last updated"
+    required:
+      - id
+      - name
+      - price
+      - stock
+      - active
+      - createdAt
+      - updatedAt
+
+# Error response schema
+errorSchema:
+  type: object
+  properties:
+    error:
+      type: object
+      properties:
+        code:
+          type: string
+          description: "Error code"
+        message:
+          type: string
+          description: "Human-readable error message"
+        details:
+          type: string
+          description: "Additional error details (optional)"
+      required:
+        - code
+        - message
+
+# CORS configuration
+cors:
+  allowOrigin: "*"
+  allowMethods: "GET,POST,PATCH,DELETE,OPTIONS"
+  allowHeaders: "Content-Type, Authorization"
+
+# Additional metadata
+metadata:
+  tags:
+    - crud
+    - database
+    - products
+    - inventory
+    - boltic
+    - sdk
+  
+  examples:
+    createProduct:
+      description: "Create a new product"
+      request:
+        method: POST
+        path: "/products"
+        body:
+          name: "Wireless Headphones"
+          description: "High-quality wireless headphones with noise cancellation"
+          price: 299.99
+          category: "Electronics"
+          stock: 50
+          active: true
+      response:
+        status: 201
+        body:
+          data:
+            id: "product_123"
+            name: "Wireless Headphones"
+            description: "High-quality wireless headphones with noise cancellation"
+            price: 299.99
+            category: "Electronics"
+            stock: 50
+            active: true
+            createdAt: "2023-10-01T12:00:00Z"
+            updatedAt: "2023-10-01T12:00:00Z"
+    
+    updateProduct:
+      description: "Update product price and stock"
+      request:
+        method: PATCH
+        path: "/products/product_123"
+        body:
+          price: 279.99
+          stock: 45
+      response:
+        status: 200
+        body:
+          data:
+            id: "product_123"
+            name: "Wireless Headphones"
+            description: "High-quality wireless headphones with noise cancellation"
+            price: 279.99
+            category: "Electronics"
+            stock: 45
+            active: true
+            createdAt: "2023-10-01T12:00:00Z"
+            updatedAt: "2023-10-01T12:05:00Z"
+    
+    listProducts:
+      description: "Get products with pagination and filtering"
+      request:
+        method: GET
+        path: "/products?limit=10&offset=0&category=Electronics&active=true"
+      response:
+        status: 200
+        body:
+          data:
+            - id: "product_123"
+              name: "Wireless Headphones"
+              description: "High-quality wireless headphones with noise cancellation"
+              price: 279.99
+              category: "Electronics"
+              stock: 45
+              active: true
+              createdAt: "2023-10-01T12:00:00Z"
+              updatedAt: "2023-10-01T12:05:00Z"
+          pagination:
+            limit: 10
+            offset: 0
+            total: 1 
