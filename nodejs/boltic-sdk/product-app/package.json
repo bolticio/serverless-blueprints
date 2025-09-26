@@ -1,0 +1,42 @@
+{
+  "name": "boltic-sdk-products-api",
+  "version": "1.0.0",
+  "description": "A serverless CRUD API for managing products using the Boltic SDK",
+  "type": "module",
+  "main": "handler.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node local-server.mjs",
+    "dev": "node local-server.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "boltic",
+    "sdk",
+    "serverless",
+    "crud",
+    "products",
+    "inventory",
+    "api",
+    "database"
+  ],
+  "author": "AI Assistant",
+  "license": "MIT",
+  "dependencies": {
+    "boltic-sdk": "^0.0.1"
+  },
+  "peerDependencies": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/serverless-blueprints.git",
+    "directory": "nodejs/boltic-sdk/xyz"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/serverless-blueprints/issues"
+  },
+  "homepage": "https://github.com/your-org/serverless-blueprints/tree/main/nodejs/boltic-sdk/xyz#readme"
+} 
