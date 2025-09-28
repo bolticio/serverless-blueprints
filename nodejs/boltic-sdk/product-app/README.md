@@ -29,7 +29,7 @@ The handler provisions a `products` table (when permitted), serves the single-pa
 ```js
 import { createClient } from '@boltic/sdk';
 
-const boltic = createClient(process.env.BOLTIC_API_KEY, { environment: 'uat' });
+const boltic = createClient(process.env.BOLTIC_API_KEY, {  });
 
 // Save a product
 await boltic.records.insert('products', {
@@ -57,7 +57,6 @@ await boltic.records.insert('products', {
 - Environment variables
   - `BOLTIC_API_KEY`: API token (e.g. `xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxx`)
   - `BOLTIC_TABLE_NAME` (optional): overrides the default `products` table name
-  - `BOLTIC_ENVIRONMENT` (optional): Boltic workspace environment (`uat`, `sit`, `prod`, …)
 
 ## Install & Local Test
 

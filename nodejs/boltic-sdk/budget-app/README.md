@@ -29,7 +29,7 @@ The handler provisions a `budget_items` table (when supported), serves the singl
 ```js
 import { createClient } from '@boltic/sdk';
 
-const boltic = createClient(process.env.BOLTIC_API_KEY, { environment: 'sit' });
+const boltic = createClient(process.env.BOLTIC_API_KEY, {  });
 
 // Record an expense
 await boltic.records.insert('budget_items', {
@@ -54,7 +54,6 @@ await boltic.records.insert('budget_items', {
 - Environment variables
   - `BOLTIC_API_KEY`: API token (e.g. `xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxx`)
   - `BOLTIC_BUDGET_TABLE` (optional): overrides the default `budget_items` table name
-  - `BOLTIC_ENVIRONMENT` (optional): Boltic workspace environment (`sit`, `uat`, `prod`, …)
 
 ## Install & Local Test
 

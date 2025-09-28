@@ -29,7 +29,7 @@ The handler provisions a `todos` table (where supported), exposes CRUD routes, a
 ```js
 import { createClient } from '@boltic/sdk';
 
-const boltic = createClient(process.env.BOLTIC_API_KEY, { environment: 'uat' });
+const boltic = createClient(process.env.BOLTIC_API_KEY, { });
 
 // Mark a todo as completed
 await boltic.records.updateById('todos', todoId, { completed: true, updatedAt: new Date().toISOString() });
@@ -52,7 +52,6 @@ await boltic.records.updateById('todos', todoId, { completed: true, updatedAt: n
 - Environment variables
   - `BOLTIC_API_KEY`: API token (e.g. `xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxx`)
   - `BOLTIC_TABLE_NAME` (optional): overrides the default `todos` table name
-  - `BOLTIC_ENVIRONMENT` (optional): Boltic workspace environment (`uat`, `sit`, `prod`, …)
 
 ## Install & Local Test
 
