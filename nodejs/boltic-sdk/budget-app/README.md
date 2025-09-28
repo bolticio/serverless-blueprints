@@ -1,31 +1,30 @@
 # Example: Budget Planner App with Boltic Database SDK
 
-Track income and expenses with a lightweight budgeting experience on top of the Boltic Database SDK. This blueprint delivers a responsive UI, summary insights, and REST endpoints so you can log financial activity from any device.
+Build a lightweight finance tracker on top of the Boltic Database SDK. This blueprint gives you a responsive UI, rolling summaries, and REST endpoints so you can capture income and expenses from any device.
 
 ## 🚀 Try It Out
 
-**Local Demo:**
-1. `npm install`
-2. `npm start`
-3. Head to [http://localhost:3000](http://localhost:3000)
+**Live Demo:** [https://budget-app-d9ddc9d7.serverless.boltic.app/](https://budget-app-d9ddc9d7.serverless.boltic.app/)
 
-Capture budget entries immediately—the frontend and backend ship together and communicate through `/api/budget` routes.
+Test the budgeting workflow in your browser—the deployment showcases how Boltic handles table provisioning, record writes, and real-time totals.
 
 ### Budget Dashboard
 
-_Add recurring bills, one-off expenses, and income items while watching totals update in real time._
+![Budget Dashboard](./budget-app.png)
+_Add recurring bills, one-off expenses, and income entries while your totals update instantly._
 
-### Boltic Database View
+### Data Storage in Boltic Database
 
-_Each entry writes directly to your Boltic database, enabling downstream reporting or automations._
+![Boltic Budget Table](./budget-app-database.png)
+_Each transaction is stored in Boltic, making it simple to trigger downstream reporting or automations._
 
 ## Why Boltic Database SDK?
 
-Boltic SDK abstracts the heavy lifting of database access. Initialize with your API key, and you can create tables, insert records, and run queries with concise method calls. Combine that power with Boltic Serverless to publish production-ready finance tools in record time.
+Boltic SDK removes the boilerplate from database access. Initialize it with your API key and environment, then use intuitive helpers to create tables, insert records, and query data. Paired with Boltic Serverless, you can deploy production-grade finance tooling in minutes.
 
 ## How This Example Uses Boltic SDK
 
-The handler sets up a `budget_items` table (when allowed), hosts the budgeting UI, and exposes endpoints for inserting entries and fetching rollups.
+The handler provisions a `budget_items` table (when supported), serves the single-page UI, and exposes endpoints for inserting entries and fetching summaries.
 
 ```js
 import { createClient } from '@boltic/sdk';
@@ -71,7 +70,7 @@ npm start
 
 ## Deploying on Boltic Serverless
 
-Publish your own budgeting blueprint by following the standard Boltic Serverless workflow.
+Follow the standard Boltic workflow to publish this budgeting experience.
 
 1. **Initialize a git repository**
    ```bash
@@ -96,8 +95,8 @@ Publish your own budgeting blueprint by following the standard Boltic Serverless
    git push --set-upstream origin main
    ```
 6. **Create the serverless app in Boltic Console**
-   - Select "Hosted git"
-   - Choose Node.js 20, set environment variables, and deploy
+   - Select "Hosted git" and provide your repo details
+   - Choose Node.js 20 and configure environment variables
 
 ## Data Model
 
@@ -120,4 +119,4 @@ Publish your own budgeting blueprint by following the standard Boltic Serverless
 3. Run locally or deploy to Boltic Serverless to share the budgeting UI.
 4. Extend the schema or UI—add tags, recurring reminders, or export features as needed.
 
-Leverage this template whenever you need a fast, data-driven budgeting workflow on top of the Boltic Database SDK.
+Use this blueprint whenever you need a fast, data-driven budgeting workflow backed by the Boltic Database SDK.

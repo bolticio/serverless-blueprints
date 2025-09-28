@@ -4,19 +4,18 @@ Showcase a complete product catalog—UI and API included—powered by the Bolti
 
 ## 🚀 Try It Out
 
-**Local Demo:**
-1. `npm install`
-2. `npm start`
-3. Open [http://localhost:3000](http://localhost:3000)
+**Live Demo:** [https://product-app-ca4eb7f9.serverless.boltic.app](https://product-app-ca4eb7f9.serverless.boltic.app)
 
-The browser-based console launches automatically and talks to the same serverless handler you deploy to Boltic. Spin up the `/api/products` endpoints and UI together in minutes.
+Explore the hosted catalog manager to see how Boltic handles CRUD operations, inventory updates, and table provisioning end-to-end.
 
 ### Product Admin Console
 
+![Product Admin Console](./product-app-site.png)
 _Add, update, filter, or delete products from a polished dashboard with inline stock controls and status badges._
 
 ### Boltic Database View
 
+![Boltic Product Table](./product-app-database.png)
 _Records created through the UI are immediately available in your Boltic database for downstream automations, reporting, or integrations._
 
 ## Why Boltic Database SDK?

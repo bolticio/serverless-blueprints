@@ -1,22 +1,21 @@
 # Example: Todo Management App with Boltic Database SDK
 
-Keep track of tasks with a fully hosted todo manager built on the Boltic Database SDK. This blueprint bundles a streamlined UI and REST API so you can add notes, due dates, and completion states in one place.
+Keep track of tasks end-to-end with the Boltic Database SDK. This blueprint bundles a polished UI, completion tracking, and REST endpoints so you can capture notes, due dates, and status in one place.
 
 ## 🚀 Try It Out
 
-**Local Demo:**
-1. `npm install`
-2. `npm start`
-3. Open [http://localhost:3000](http://localhost:3000)
+**Live Demo:** [https://todo-app-b23c499b.serverless.boltic.app/](https://todo-app-b23c499b.serverless.boltic.app/)
 
-The single-page app launches immediately, backed by the same `/api/todos` endpoints you deploy to Boltic.
+Experiment with the hosted version to see how the Boltic Database SDK powers the todo workflow end-to-end.
 
 ### Todo Workspace
 
+![Todo Workspace](./todo-app.png)
 _Create, edit, filter, and complete todos with inline forms, due date pickers, and status badges._
 
-### Boltic Database View
+### Data Storage in Boltic Database
 
+![Boltic Todo Table](./todo-app-database.png)
 _Every change persists to your Boltic database so you can trigger automations, dashboards, or integrations._
 
 ## Why Boltic Database SDK?
