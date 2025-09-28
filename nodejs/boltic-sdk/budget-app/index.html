@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Micro Budget Planner</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="card">
+    <header class="intro">
+      <div>
+        <h1>Micro Budget Planner</h1>
+        <p class="description">Track a few quick income or expense items, calculate totals, and stay on top of upcoming payments.</p>
+      </div>
+      <button id="refresh-btn" type="button" class="secondary">Refresh</button>
+    </header>
+
+    <section class="summary" aria-live="polite">
+      <article class="summary-card income">
+        <h2>Income</h2>
+        <p id="summary-income" class="amount">$0.00</p>
+      </article>
+      <article class="summary-card expense">
+        <h2>Expenses</h2>
+        <p id="summary-expense" class="amount">$0.00</p>
+      </article>
+      <article class="summary-card net">
+        <h2>Net</h2>
+        <p id="summary-net" class="amount">$0.00</p>
+      </article>
+    </section>
+
+    <form id="budget-form" class="form" novalidate>
+      <div class="field">
+        <label for="category">Category *</label>
+        <input id="category" name="category" type="text" placeholder="Marketing subscription" maxlength="120" required />
+      </div>
+
+      <div class="field">
+        <label for="amount">Amount *</label>
+        <input id="amount" name="amount" type="number" min="0.01" step="0.01" placeholder="125.00" required />
+      </div>
+
+      <div class="field">
+        <label for="entry-type">Type *</label>
+        <select id="entry-type" name="entry-type">
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="due-date">Due date</label>
+        <input id="due-date" name="due-date" type="date" />
+      </div>
+
+      <div class="field">
+        <label for="notes">Notes</label>
+        <textarea id="notes" name="notes" rows="4" maxlength="1500" placeholder="Billing cycle, contacts, or reminders"></textarea>
+      </div>
+
+      <button id="submit-btn" type="submit">Save Entry</button>
+      <div id="status" class="status" hidden></div>
+    </form>
+
+    <section class="history" aria-live="polite">
+      <h2>Recent Entries</h2>
+      <ul id="entries-list" class="history-list">
+        <li class="empty" hidden>No entries yet. Add your first budget item above.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>

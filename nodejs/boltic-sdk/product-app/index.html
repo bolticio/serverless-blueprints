@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Boltic Product App</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <div>
+        <h1>Boltic Product App</h1>
+        <p class="lead">Manage your product catalog with a friendly UI powered by the Boltic Database SDK.</p>
+      </div>
+      <div class="hero-actions">
+        <button id="refresh-btn" type="button">Refresh Products</button>
+        <button id="setup-btn" type="button" class="secondary">Create Products Table</button>
+      </div>
+    </header>
+
+    <section class="layout">
+      <form id="product-form" class="card" novalidate>
+        <h2>Add New Product</h2>
+        <div class="field">
+          <label for="name">Name *</label>
+          <input id="name" name="name" type="text" placeholder="Wireless Headphones" required maxlength="160" />
+        </div>
+        <div class="field">
+          <label for="price">Price (USD) *</label>
+          <input id="price" name="price" type="number" placeholder="199.99" step="0.01" min="0" required />
+        </div>
+        <div class="field">
+          <label for="category">Category</label>
+          <input id="category" name="category" type="text" placeholder="Electronics" maxlength="120" />
+        </div>
+        <div class="field">
+          <label for="stock">Stock *</label>
+          <input id="stock" name="stock" type="number" placeholder="25" min="0" step="1" value="0" required />
+        </div>
+        <div class="field">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" placeholder="Short summary about your product" rows="4" maxlength="4000"></textarea>
+        </div>
+        <div class="field checkbox-field">
+          <input id="active" name="active" type="checkbox" checked />
+          <label for="active">Active</label>
+        </div>
+        <button type="submit">Create Product</button>
+      </form>
+
+      <section class="card table-card">
+        <div class="table-header">
+          <h2>Products</h2>
+          <div class="search">
+            <label class="visually-hidden" for="filter-category">Filter by category</label>
+            <input id="filter-category" type="search" placeholder="Filter by category" />
+            <select id="filter-active">
+              <option value="">All</option>
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+            <button id="apply-filters" type="button" class="secondary">Apply</button>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Category</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Updated</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="products-body">
+              <tr class="empty" hidden>
+                <td colspan="7">No products found. Add your first product using the form.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <div id="status" class="status" hidden></div>
+  </main>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>

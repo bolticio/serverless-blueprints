@@ -6,19 +6,18 @@ import { fileURLToPath } from 'node:url';
 
 const REQUIRED_ENV_VARS = ['BOLTIC_API_KEY'];
 const DEFAULT_ENVIRONMENT = 'sit';
-const DEFAULT_TABLE = 'todos';
-const MAX_BODY_SIZE_BYTES = 64 * 1024; // keep payloads small
+const DEFAULT_TABLE = 'budget_items';
+const MAX_BODY_SIZE_BYTES = 64 * 1024;
 const MAX_PAGE_SIZE = 100;
-const MAX_TITLE_LENGTH = 160;
-const MAX_DESCRIPTION_LENGTH = 4000;
-const MAX_STATUS_LENGTH = 40;
-const ALLOWED_STATUSES = ['pending', 'in-progress', 'completed'];
+const MAX_CATEGORY_LENGTH = 120;
+const MAX_NOTES_LENGTH = 1500;
+const MAX_AMOUNT = 100_000_000;
 
 const MODULE_DIR = fileURLToPath(new URL('.', import.meta.url));
 
 const RAW_ENVIRONMENT = process.env.BOLTIC_ENVIRONMENT || process.env.ENVIRONMENT || DEFAULT_ENVIRONMENT;
 const ENVIRONMENT = RAW_ENVIRONMENT.toLowerCase();
-const TODOS_TABLE = process.env.BOLTIC_TODOS_TABLE || process.env.BOLTIC_TABLE_NAME || DEFAULT_TABLE;
+const BUDGET_TABLE = process.env.BOLTIC_BUDGET_TABLE || DEFAULT_TABLE;
 const BOLTIC_DEBUG = process.env.BOLTIC_DEBUG === 'true';
 const BOLTIC_TIMEOUT_MS = Number(process.env.BOLTIC_TIMEOUT_MS || 10_000);
 
@@ -223,45 +222,45 @@ const withTimeout = async (promise, description) => {
 
 const requiredColumns = [
   {
-    name: 'title',
+    name: 'category',
     type: 'text',
     is_nullable: false,
-    description: 'Todo title',
+    description: 'Spending or income category',
     field_order: 1,
   },
   {
-    name: 'description',
-    type: 'long-text',
-    is_nullable: true,
-    description: 'Detailed description of the todo',
+    name: 'amount',
+    type: 'text',
+    is_nullable: false,
+    description: 'Monetary amount stored as text',
     field_order: 2,
   },
   {
-    name: 'status',
+    name: 'entryType',
     type: 'text',
     is_nullable: false,
-    description: 'Todo status (pending, in-progress, completed)',
+    description: 'Entry classification (expense or income)',
     field_order: 3,
   },
   {
     name: 'dueDate',
     type: 'date-time',
     is_nullable: true,
-    description: 'Optional due date',
+    description: 'Optional due date for the item',
     field_order: 4,
   },
   {
-    name: 'priority',
-    type: 'text',
+    name: 'notes',
+    type: 'long-text',
     is_nullable: true,
-    description: 'Optional priority label',
+    description: 'Additional notes for the entry',
     field_order: 5,
   },
   {
     name: 'createdAt',
     type: 'date-time',
     is_nullable: false,
-    description: 'Creation timestamp',
+    description: 'Timestamp when the entry was created',
     field_order: 6,
   },
 ];
@@ -303,11 +302,11 @@ const findOrCreateTable = async () => {
   let lookup;
   try {
     lookup = await withTimeout(
-      bolticClient.tables.findByName(TODOS_TABLE),
+      bolticClient.tables.findByName(BUDGET_TABLE),
       'Boltic table lookup',
     );
   } catch (error) {
-    throw new Error(formatBolticError('Failed to query todos table', error));
+    throw new Error(formatBolticError('Failed to query budget table', error));
   }
 
   if (!isErrorResponse(lookup) && lookup.data) {
@@ -315,8 +314,8 @@ const findOrCreateTable = async () => {
   }
 
   const tableDefinition = {
-    name: TODOS_TABLE,
-    description: 'Todo items tracked via the Boltic SDK todo example',
+    name: BUDGET_TABLE,
+    description: 'Budget planner entries captured via the Boltic SDK example',
     fields: requiredColumns,
   };
 
@@ -327,35 +326,35 @@ const findOrCreateTable = async () => {
       'Boltic table creation',
     );
   } catch (error) {
-    throw new Error(formatBolticError(`Failed to create Boltic table '${TODOS_TABLE}'`, error));
+    throw new Error(formatBolticError(`Failed to create Boltic table '${BUDGET_TABLE}'`, error));
   }
 
   if (isErrorResponse(creationResult)) {
-    const message = creationResult.error?.message || 'Failed to create todos table';
+    const message = creationResult.error?.message || 'Failed to create budget table';
     throw new Error(message);
   }
 
   let verify;
   try {
     verify = await withTimeout(
-      bolticClient.tables.findByName(TODOS_TABLE),
+      bolticClient.tables.findByName(BUDGET_TABLE),
       'Boltic table verification',
     );
   } catch (error) {
-    throw new Error(formatBolticError('Unable to verify Boltic todos table creation', error));
+    throw new Error(formatBolticError('Unable to verify Boltic budget table creation', error));
   }
 
   if (isErrorResponse(verify) || !verify.data) {
-    throw new Error('Unable to verify Boltic todos table creation');
+    throw new Error('Unable to verify Boltic budget table creation');
   }
 
-  console.log(`Created Boltic table '${TODOS_TABLE}' (id: ${verify.data.id}).`);
+  console.log(`Created Boltic table '${BUDGET_TABLE}' (id: ${verify.data.id}).`);
   return verify.data;
 };
 
 const normalizeString = (value) => (typeof value === 'string' ? value.trim() : '');
 
-const normalizeStatus = (value) => {
+const normalizeEntryType = (value) => {
   if (typeof value !== 'string') {
     return null;
   }
@@ -363,7 +362,7 @@ const normalizeStatus = (value) => {
   if (!trimmed) {
     return null;
   }
-  if (!ALLOWED_STATUSES.includes(trimmed)) {
+  if (trimmed !== 'expense' && trimmed !== 'income') {
     return undefined;
   }
   return trimmed;
@@ -380,27 +379,54 @@ const normalizeDueDate = (value) => {
   return date.toISOString();
 };
 
-const validateTodoPayload = ({ title, description, status, dueDate, priority }) => {
-  if (!title) {
-    return 'Title is required.';
+const normalizeAmount = (value) => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
   }
-  if (title.length > MAX_TITLE_LENGTH) {
-    return `Title is too long. Keep it under ${MAX_TITLE_LENGTH} characters.`;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return null;
+    }
+    const parsed = Number(trimmed);
+    if (!Number.isFinite(parsed)) {
+      return undefined;
+    }
+    return parsed;
   }
-  if (description && description.length > MAX_DESCRIPTION_LENGTH) {
-    return 'Description is too long.';
+  return undefined;
+};
+
+const validateBudgetPayload = ({ category, amount, entryType, dueDate, notes }) => {
+  if (!category) {
+    return 'Category is required.';
   }
-  if (status && status.length > MAX_STATUS_LENGTH) {
-    return 'Status value is too long.';
+  if (category.length > MAX_CATEGORY_LENGTH) {
+    return `Category is too long. Keep it under ${MAX_CATEGORY_LENGTH} characters.`;
   }
-  if (status && !ALLOWED_STATUSES.includes(status)) {
-    return `Status must be one of: ${ALLOWED_STATUSES.join(', ')}.`;
+  if (amount === null) {
+    return 'Amount is required.';
+  }
+  if (amount === undefined || Number.isNaN(amount) || !Number.isFinite(amount)) {
+    return 'Amount must be a valid number.';
+  }
+  if (Math.abs(amount) > MAX_AMOUNT) {
+    return 'Amount is too large.';
+  }
+  if (amount <= 0) {
+    return 'Amount must be greater than zero.';
+  }
+  if (!entryType) {
+    return 'Entry type must be expense or income.';
+  }
+  if (entryType === undefined) {
+    return 'Entry type must be either expense or income.';
   }
   if (dueDate === undefined) {
-    return 'Due date is invalid. Please provide a valid ISO 8601 date or leave it blank.';
+    return 'Due date is invalid. Provide a valid ISO date or leave it blank.';
   }
-  if (priority && priority.length > 80) {
-    return 'Priority label must be 80 characters or fewer.';
+  if (notes && notes.length > MAX_NOTES_LENGTH) {
+    return 'Notes are too long.';
   }
   return null;
 };
@@ -412,13 +438,12 @@ const handleOptions = async (req, res) => {
 const handleSetup = async (req, res) => {
   try {
     const tableInfo = await ensureBolticSetup();
-
     sendSuccess(res, 200, {
-      message: 'Boltic setup complete. Ready to manage todos.',
+      message: 'Boltic setup complete. Ready to capture budget entries.',
       data: tableInfo,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to setup todos table';
+    const message = error instanceof Error ? error.message : 'Failed to setup budget table';
     const isNotSupported = typeof message === 'string' && (message.includes('not supported') || error?.status === 501);
 
     if (isNotSupported) {
@@ -426,31 +451,30 @@ const handleSetup = async (req, res) => {
         res,
         501,
         'TABLE_CREATION_NOT_SUPPORTED',
-        'SDK-based table creation is not supported. Create the table manually with columns: title (text), description (long-text), status (text), dueDate (date-time), priority (text), createdAt (date-time).',
+        'SDK-based table creation is not supported. Create the table manually with columns: category (text), amount (text), entryType (text), dueDate (date-time), notes (long-text), createdAt (date-time).',
       );
       return;
     }
 
-    sendError(res, 500, 'SETUP_ERROR', 'Failed to setup todos table', message);
+    sendError(res, 500, 'SETUP_ERROR', 'Failed to setup budget table', message);
   }
 };
 
-const handleCreateTodo = async (req, res, _params, client) => {
+const handleCreateEntry = async (req, res, _params, client) => {
   try {
     const body = await parseJSON(req);
-    const title = normalizeString(body.title);
-    const description = normalizeString(body.description ?? body.notes ?? '');
-    const rawStatus = typeof body.status === 'string' ? body.status : '';
-    const status = normalizeStatus(rawStatus);
+    const category = normalizeString(body.category);
+    const entryType = normalizeEntryType(body.entryType ?? body.type ?? 'expense');
+    const amount = normalizeAmount(body.amount);
     const dueDate = normalizeDueDate(body.dueDate ?? body.due_date ?? body.due ?? null);
-    const priority = normalizeString(body.priority || '');
+    const notes = normalizeString(body.notes ?? '');
 
-    const validationError = validateTodoPayload({
-      title,
-      description,
-      status: status === null ? 'pending' : status,
+    const validationError = validateBudgetPayload({
+      category,
+      amount,
+      entryType,
       dueDate,
-      priority,
+      notes,
     });
 
     if (validationError) {
@@ -461,48 +485,47 @@ const handleCreateTodo = async (req, res, _params, client) => {
     await ensureBolticSetup();
 
     const createdAt = new Date().toISOString();
-    const finalStatus = status === null ? 'pending' : status;
 
     let result;
     try {
       result = await withTimeout(
-        client.records.insert(TODOS_TABLE, {
-          title,
-          description: description || null,
-          status: finalStatus,
+        client.records.insert(BUDGET_TABLE, {
+          category,
+          amount: String(amount),
+          entryType,
           dueDate,
-          priority: priority || null,
+          notes: notes || null,
           createdAt,
         }),
-        'Boltic todo creation',
+        'Boltic budget entry creation',
       );
     } catch (error) {
-      throw new Error(formatBolticError('Failed to create todo', error));
+      throw new Error(formatBolticError('Failed to create budget entry', error));
     }
 
     if (isErrorResponse(result)) {
-      const message = result.error?.message || 'Failed to create todo';
+      const message = result.error?.message || 'Failed to create budget entry';
       sendError(res, 500, 'CREATE_ERROR', message);
       return;
     }
 
     sendSuccess(res, 201, {
-      message: 'Todo created successfully.',
+      message: 'Budget entry saved.',
       data: result.data,
     });
   } catch (error) {
-    console.error('Create todo error:', error);
+    console.error('Create budget entry error:', error);
     if (error.message === 'Invalid JSON payload') {
       sendError(res, 400, 'INVALID_JSON', error.message);
     } else if (error.message === 'Request body too large') {
       sendError(res, 413, 'PAYLOAD_TOO_LARGE', error.message);
     } else {
-      sendError(res, 500, 'CREATE_ERROR', 'Failed to create todo', error.message);
+      sendError(res, 500, 'CREATE_ERROR', 'Failed to create budget entry', error.message);
     }
   }
 };
 
-const handleListTodos = async (req, res, _params, client, url) => {
+const handleListEntries = async (req, res, _params, client, url) => {
   try {
     const limitParam = parseInt(url.searchParams.get('limit'), 10);
     const limit = Number.isFinite(limitParam) && limitParam > 0
@@ -511,6 +534,13 @@ const handleListTodos = async (req, res, _params, client, url) => {
 
     const offsetParam = parseInt(url.searchParams.get('offset'), 10);
     const offset = Number.isFinite(offsetParam) && offsetParam >= 0 ? offsetParam : 0;
+
+    const typeParam = url.searchParams.get('type');
+    const normalizedType = typeParam ? normalizeEntryType(typeParam) : null;
+    if (normalizedType === undefined) {
+      sendError(res, 400, 'INVALID_FILTER', 'type must be expense or income when provided.');
+      return;
+    }
 
     const pageNo = Math.floor(offset / limit) + 1;
 
@@ -527,9 +557,15 @@ const handleListTodos = async (req, res, _params, client, url) => {
       },
     };
 
+    if (normalizedType) {
+      baseQuery.filter = {
+        entryType: normalizedType,
+      };
+    }
+
     const executeQuery = async (options) => withTimeout(
-      client.records.findAll(TODOS_TABLE, options),
-      'Boltic todo list fetch',
+      client.records.findAll(BUDGET_TABLE, options),
+      'Boltic budget entries fetch',
     );
 
     let response = await executeQuery(baseQuery);
@@ -544,20 +580,37 @@ const handleListTodos = async (req, res, _params, client, url) => {
       if (needsFallback) {
         const fallbackQuery = { ...baseQuery };
         delete fallbackQuery.sort;
-        console.warn('Todo list query fallback triggered:', combined.trim() || 'Sort error');
+        console.warn('Budget list query fallback triggered:', combined.trim() || 'Sort error');
         response = await executeQuery(fallbackQuery);
       }
     }
 
     if (isErrorResponse(response)) {
-      throw new Error(response.error?.message || 'Failed to fetch todos');
+      console.error('Budget list error response:', response.error);
+      throw new Error(response.error?.message || 'Failed to fetch budget entries');
     }
 
     const records = response.data || [];
     const pagination = response.pagination || {};
 
+    const summary = records.reduce((acc, record) => {
+      const amountValue = typeof record.amount === 'number' ? record.amount : Number(record.amount);
+      if (!Number.isFinite(amountValue)) {
+        return acc;
+      }
+      if ((record.entryType || '').toLowerCase() === 'income') {
+        acc.totalIncome += amountValue;
+      } else {
+        acc.totalExpenses += amountValue;
+      }
+      return acc;
+    }, { totalIncome: 0, totalExpenses: 0 });
+
+    summary.net = summary.totalIncome - summary.totalExpenses;
+
     sendSuccess(res, 200, {
       data: records,
+      summary,
       pagination: {
         limit,
         offset,
@@ -565,41 +618,13 @@ const handleListTodos = async (req, res, _params, client, url) => {
       },
     });
   } catch (error) {
-    console.error('Todo list failure:', error);
-    sendError(res, 500, 'FETCH_ERROR', 'Failed to fetch todos', error.message);
+    console.error('Budget list failure:', error);
+    sendError(res, 500, 'FETCH_ERROR', 'Failed to fetch budget entries', error.message);
   }
 };
 
-const handleGetTodo = async (req, res, params, client) => {
-  try {
-    await ensureBolticSetup();
-
-    const response = await withTimeout(
-      client.records.findOne(TODOS_TABLE, params.id),
-      'Boltic todo lookup',
-    );
-
-    if (isErrorResponse(response)) {
-      if (response.error?.code?.includes('not_found') || response.error?.message?.includes('not found')) {
-        sendError(res, 404, 'TODO_NOT_FOUND', `Todo with id ${params.id} not found`);
-        return;
-      }
-      throw new Error(response.error?.message || 'Failed to fetch todo');
-    }
-
-    if (!response.data) {
-      sendError(res, 404, 'TODO_NOT_FOUND', `Todo with id ${params.id} not found`);
-      return;
-    }
-
-    sendSuccess(res, 200, { data: response.data });
-  } catch (error) {
-    if (error.status === 404 || error.message?.includes('not found')) {
-      sendError(res, 404, 'TODO_NOT_FOUND', `Todo with id ${params.id} not found`);
-      return;
-    }
-    sendError(res, 500, 'FETCH_ERROR', 'Failed to fetch todo', error.message);
-  }
+const handleHealth = async (req, res) => {
+  sendSuccess(res, 200, { message: 'ok' });
 };
 
 const handleNotFound = async (req, res) => {
@@ -623,16 +648,12 @@ router.add('GET', '/style.css', staticAssetHandler('style.css'));
 router.add('GET', '/styles.css', staticAssetHandler('style.css'));
 router.add('POST', '/setup', handleSetup);
 router.add('POST', '/api/setup', handleSetup);
-router.add('POST', '/', handleCreateTodo);
-router.add('POST', '/todos', handleCreateTodo);
-router.add('POST', '/api/todos', handleCreateTodo);
-router.add('GET', '/api/todos', handleListTodos);
-router.add('GET', '/todos', handleListTodos);
-router.add('GET', '/api/todos/:id', handleGetTodo);
-router.add('GET', '/todos/:id', handleGetTodo);
-router.add('GET', '/health', async (req, res) => {
-  sendSuccess(res, 200, { message: 'ok' });
-});
+router.add('POST', '/', handleCreateEntry);
+router.add('POST', '/api/budget', handleCreateEntry);
+router.add('POST', '/budget', handleCreateEntry);
+router.add('GET', '/api/budget', handleListEntries);
+router.add('GET', '/budget', handleListEntries);
+router.add('GET', '/health', handleHealth);
 router.add('GET', '*', handleNotFound);
 router.add('POST', '*', handleNotFound);
 
@@ -659,7 +680,7 @@ export const startLocalServer = async () => {
 
   try {
     await ensureBolticSetup();
-    console.log('Boltic setup complete. Ready to manage todos.');
+    console.log('Boltic setup complete. Ready to capture budget entries.');
   } catch (error) {
     console.warn(formatBolticError('Boltic setup could not be completed during startup', error));
   }
@@ -672,7 +693,7 @@ export const startLocalServer = async () => {
   });
 
   server.listen(port, () => {
-    console.log(`Todo handler listening on http://localhost:${port}`);
+    console.log(`Budget planner listening on http://localhost:${port}`);
   });
 
   return server;

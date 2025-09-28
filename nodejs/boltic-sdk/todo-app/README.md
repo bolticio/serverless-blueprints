@@ -1,354 +1,120 @@
-# Boltic SDK Todos API
+# Example: Todo Management App with Boltic Database SDK
 
-A serverless CRUD API for managing todos using the **boltic-sdk** package exclusively. This implementation provides a tiny HTTP router inside a single `handler.js` file with full CRUD operations for a Boltic Table named `todos`.
+Keep track of tasks with a fully hosted todo manager built on the Boltic Database SDK. This blueprint bundles a streamlined UI and REST API so you can add notes, due dates, and completion states in one place.
 
-## Features
+## 🚀 Try It Out
 
-- ✅ **Pure boltic-sdk** - No raw REST calls, no fetch, no fallbacks
-- ✅ **Tiny HTTP Router** - Built-in routing without external dependencies
-- ✅ **Full CRUD Operations** - Create, Read, Update, Delete todos
-- ✅ **Table Setup Endpoint** - Idempotent table creation
-- ✅ **Pagination Support** - List todos with limit/offset
-- ✅ **CORS Enabled** - Permissive CORS headers for all endpoints
-- ✅ **Input Validation** - Comprehensive validation with helpful error messages
-- ✅ **Error Handling** - Consistent error response format
-- ✅ **ESM Support** - Modern ES modules syntax
-- ✅ **1MB Body Limit** - Protection against large payloads
+**Local Demo:**
+1. `npm install`
+2. `npm start`
+3. Open [http://localhost:3000](http://localhost:3000)
 
-## Table Schema
+The single-page app launches immediately, backed by the same `/api/todos` endpoints you deploy to Boltic.
 
-The `todos` table is created with the following schema:
+### Todo Workspace
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | string/uuid | Primary key (auto-generated) |
-| `title` | text | Todo title (required, non-empty) |
-| `completed` | checkbox | Completion status (default: false) |
-| `createdAt` | datetime | Creation timestamp (auto-set) |
-| `updatedAt` | datetime | Last update timestamp (auto-updated) |
+_Create, edit, filter, and complete todos with inline forms, due date pickers, and status badges._
 
-## Environment Variables
+### Boltic Database View
 
-### Required
+_Every change persists to your Boltic database so you can trigger automations, dashboards, or integrations._
 
-- `BOLTIC_API_KEY`: Your Boltic API key for authentication
+## Why Boltic Database SDK?
 
-### Optional
+Boltic SDK offers a lightweight way to interact with your cloud database. Initialize the client with an API key and you gain access to typed helpers for tables and records—perfect for serverless apps that need agility without infrastructure overhead.
 
-- `BOLTIC_TABLE_NAME`: Table name/slug for CRUD operations (default: `'todos'`)
+## How This Example Uses Boltic SDK
 
-## API Endpoints
+The handler provisions a `todos` table (where supported), exposes CRUD routes, and serves the UI assets that call those endpoints.
 
-### CORS Preflight
+```js
+import { createClient } from '@boltic/sdk';
 
-```
-OPTIONS * → 200 OK
+const boltic = createClient(process.env.BOLTIC_API_KEY, { environment: 'uat' });
+
+// Mark a todo as completed
+await boltic.records.updateById('todos', todoId, { completed: true, updatedAt: new Date().toISOString() });
 ```
 
-Handles CORS preflight for all endpoints.
+## Boltic SDK Functions Used in `handler.js`
 
-### Setup Endpoint
+- `createClient(apiKey, options)`: Initializes the Boltic client.
+- `client.tables.findByName(name)`: Checks whether the todo table exists.
+- `client.tables.create(schema)`: Creates the table with columns such as `title`, `notes`, and `dueDate`.
+- `client.records.findAll(table, options)`: Lists todos with optional filters (e.g. `completed=true`).
+- `client.records.findOne(table, id)`: Retrieves a single todo.
+- `client.records.insert(table, data)`: Adds a new todo.
+- `client.records.updateById(table, id, data)`: Updates title, notes, due date, or completion status.
+- `client.records.deleteById(table, id)`: Removes a todo.
 
-```
-POST /setup → 200 OK
-```
+## Requirements
 
-Creates the `todos` table if it doesn't exist (idempotent operation).
+- Node.js 18+
+- Environment variables
+  - `BOLTIC_API_KEY`: API token (e.g. `xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxx`)
+  - `BOLTIC_TABLE_NAME` (optional): overrides the default `todos` table name
+  - `BOLTIC_ENVIRONMENT` (optional): Boltic workspace environment (`uat`, `sit`, `prod`, …)
 
-**Response:**
-```json
-{
-  "data": {
-    "created": boolean,
-    "alreadyExisted": boolean,
-    "table": object
-  }
-}
-```
-
-**Note:** If the SDK doesn't support table creation, returns `501` with instructions to create the table manually via Boltic UI.
-
-### List Todos
-
-```
-GET /todos?limit=20&offset=0 → 200 OK
-```
-
-**Query Parameters:**
-- `limit`: Maximum number of todos to return (default: 20)
-- `offset`: Number of todos to skip (default: 0)
-
-**Response:**
-```json
-{
-  "data": [
-    {
-      "id": "todo_123",
-      "title": "Buy groceries",
-      "completed": false,
-      "createdAt": "2023-10-01T12:00:00Z",
-      "updatedAt": "2023-10-01T12:00:00Z"
-    }
-  ],
-  "pagination": {
-    "limit": 20,
-    "offset": 0,
-    "total": 1
-  }
-}
-```
-
-### Get Single Todo
-
-```
-GET /todos/:id → 200 OK | 404 Not Found
-```
-
-**Response:**
-```json
-{
-  "data": {
-    "id": "todo_123",
-    "title": "Buy groceries",
-    "completed": false,
-    "createdAt": "2023-10-01T12:00:00Z",
-    "updatedAt": "2023-10-01T12:00:00Z"
-  }
-}
-```
-
-### Create Todo
-
-```
-POST /todos → 201 Created | 400 Bad Request
-```
-
-**Request Body:**
-```json
-{
-  "title": "Buy groceries",
-  "completed": false
-}
-```
-
-**Response:**
-```json
-{
-  "data": {
-    "id": "todo_123",
-    "title": "Buy groceries",
-    "completed": false,
-    "createdAt": "2023-10-01T12:00:00Z",
-    "updatedAt": "2023-10-01T12:00:00Z"
-  }
-}
-```
-
-### Update Todo
-
-```
-PATCH /todos/:id → 200 OK | 400 Bad Request | 404 Not Found
-```
-
-**Request Body (partial update):**
-```json
-{
-  "completed": true
-}
-```
-
-**Response:**
-```json
-{
-  "data": {
-    "id": "todo_123",
-    "title": "Buy groceries",
-    "completed": true,
-    "createdAt": "2023-10-01T12:00:00Z",
-    "updatedAt": "2023-10-01T12:05:00Z"
-  }
-}
-```
-
-### Delete Todo
-
-```
-DELETE /todos/:id → 200 OK | 404 Not Found
-```
-
-**Response:**
-```json
-{
-  "data": {
-    "id": "todo_123",
-    "deleted": true
-  }
-}
-```
-
-## Error Response Format
-
-All errors follow a consistent format:
-
-```json
-{
-  "error": {
-    "code": "ERROR_CODE",
-    "message": "Human-readable error message",
-    "details": "Optional additional details"
-  }
-}
-```
-
-### Common Error Codes
-
-- `INVALID_INPUT`: Validation failed (400)
-- `INVALID_JSON`: Malformed JSON in request body (400)
-- `PAYLOAD_TOO_LARGE`: Request body exceeds 1MB limit (413)
-- `TODO_NOT_FOUND`: Todo with specified ID not found (404)
-- `ROUTE_NOT_FOUND`: Endpoint not found (404)
-- `TABLE_CREATION_NOT_SUPPORTED`: SDK doesn't support table creation (501)
-- `SETUP_ERROR`: Table setup failed (500)
-- `FETCH_ERROR`: Failed to retrieve data (500)
-- `CREATE_ERROR`: Failed to create todo (500)
-- `UPDATE_ERROR`: Failed to update todo (500)
-- `DELETE_ERROR`: Failed to delete todo (500)
-- `INTERNAL_ERROR`: Unexpected server error (500)
-
-## Usage Examples
-
-### 1. Setup the Table
+## Install & Local Test
 
 ```bash
-curl -X POST https://your-function-url/setup
+cd nodejs/boltic-sdk/todo-app
+npm install
+npm start
 ```
 
-### 2. Create a Todo
+## Deploy
 
-```bash
-curl -X POST https://your-function-url/todos \
-  -H "Content-Type: application/json" \
-  -d '{"title": "Learn Boltic SDK", "completed": false}'
-```
+- Use `blueprint.yaml` for deployment.
 
-### 3. List All Todos
+## Deploying on Boltic Serverless
 
-```bash
-curl https://your-function-url/todos
-```
+Package this folder as a Boltic Serverless blueprint and publish a collaborative task list for your team.
 
-### 4. Get a Specific Todo
-
-```bash
-curl https://your-function-url/todos/todo_123
-```
-
-### 5. Update a Todo
-
-```bash
-curl -X PATCH https://your-function-url/todos/todo_123 \
-  -H "Content-Type: application/json" \
-  -d '{"completed": true}'
-```
-
-### 6. Delete a Todo
-
-```bash
-curl -X DELETE https://your-function-url/todos/todo_123
-```
-
-## Deployment
-
-1. Set the required environment variables:
+1. **Initialize a git repository**
    ```bash
-   export BOLTIC_API_KEY="your-api-key"
-   export BOLTIC_TABLE_NAME="todos"  # optional
+   mkdir boltic-todo-app && cd boltic-todo-app
+   git init --initial-branch=main
+   git checkout -b main
    ```
+2. **Add core files**
+   - `handler.js`
+   - `blueprint.yaml`
+3. **Stage and commit files**
+   ```bash
+   git add handler.js blueprint.yaml
+   git commit -m "Initial commit for todo app"
+   ```
+4. **Add the remote repository URL**
+   ```bash
+   git remote add origin git@ssh.git.boltic.io:<your-repo-id>/boltic-todo-app.git
+   ```
+5. **Push your changes**
+   ```bash
+   git push --set-upstream origin main
+   ```
+6. **Create the serverless app in Boltic Console**
+   - Select "Hosted git"
+   - Choose Node.js 20 and configure environment variables
 
-2. Deploy the `handler.js` file to your serverless runtime
+## Data Model
 
-3. The function is ready to handle requests at the `/setup` and `/todos` endpoints
-
-## SDK Implementation
-
-This implementation uses the official **boltic-sdk** v0.0.1 with the following methods:
-
-### Table Operations
-```javascript
-// Create table using builder pattern
-bolticClient.table(tableName)
-  .describe(description)
-  .text(fieldName, options)
-  .checkbox(fieldName, options)
-  .dateTime(fieldName, options)
-  .create()
-
-// Find table by name
-bolticClient.tables.findByName(tableName)
+```json
+{
+  "title": "Write release notes",
+  "notes": "Include new pricing details",
+  "completed": false,
+  "dueDate": "2024-06-01T17:00:00.000Z",
+  "createdAt": "2024-05-01T12:00:00.000Z",
+  "updatedAt": "2024-05-01T12:00:00.000Z"
+}
 ```
 
-### Record Operations
-```javascript
-// Insert record
-bolticClient.records.insert(tableName, data)
+## How to Use This Example
 
-// Find record by ID
-bolticClient.records.findOne(tableName, recordId)
+1. Copy the handler, UI, and blueprint files.
+2. Configure environment variables for your Boltic workspace.
+3. Deploy or run locally to test the todo workflow.
+4. Extend the schema or interface—add tags, priority levels, or user assignments as needed.
 
-// List records with pagination
-bolticClient.from(tableName).records().list().page(pageNo, pageSize).orderBy(field, direction)
-
-// Update record by ID
-bolticClient.records.updateById(tableName, recordId, data)
-
-// Delete record by ID
-bolticClient.records.deleteById(tableName, recordId)
-```
-
-## Validation Rules
-
-### Todo Title
-- **Required**: Must be provided
-- **Type**: String
-- **Non-empty**: Cannot be empty or whitespace-only
-- **Trimmed**: Leading/trailing whitespace is removed
-
-### Todo Completed
-- **Optional**: Defaults to `false`
-- **Type**: Boolean
-- **Coercion**: Only `true` is considered true, everything else is `false`
-
-### Update Operations
-- **Partial**: Only provided fields are updated
-- **At least one field**: Must provide at least one valid field to update
-- **Timestamp**: `updatedAt` is automatically set to current time
-
-## CORS Configuration
-
-The API includes permissive CORS headers:
-
-```
-Access-Control-Allow-Origin: *
-Access-Control-Allow-Methods: GET,POST,PATCH,DELETE,OPTIONS
-Access-Control-Allow-Headers: Content-Type, Authorization
-```
-
-## Security Considerations
-
-- **API Key**: The Boltic API key is validated at module load
-- **Input Validation**: All inputs are validated before processing
-- **Body Size Limit**: Request bodies are limited to 1MB
-- **Error Handling**: Sensitive information is not exposed in error messages
-- **No SQL Injection**: Using SDK methods prevents SQL injection attacks
-
-## Node.js Version
-
-This function requires **Node.js 18+** for ESM support and modern JavaScript features.
-
-## Dependencies
-
-- `boltic-sdk`: The official Boltic SDK package (v0.0.1)
-
-## License
-
-This blueprint is provided as-is for educational and development purposes.
+Use this blueprint whenever you need a lightweight task tracker powered by the Boltic Database SDK.

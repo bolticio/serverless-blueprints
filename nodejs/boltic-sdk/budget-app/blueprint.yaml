@@ -1,0 +1,25 @@
+title: boltic-micro-budget-planner
+description: One-page budget planning backend and UI powered by the Boltic SDK
+author: "AI Assistant"
+category: "Finance"
+language:
+  name: nodejs
+  version: "20"
+  title: NodeJS
+version: 0.1.0
+handler: handler.js
+
+# CORS defaults used by the handler
+cors:
+  allowOrigin: "*"
+  allowMethods: "OPTIONS,GET,POST"
+  allowHeaders: "Content-Type, Authorization"
+
+# Extra metadata for marketplace listings
+metadata:
+  tags:
+    - boltic
+    - finance
+    - budgeting
+    - forms
+    - sdk

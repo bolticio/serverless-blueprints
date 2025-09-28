@@ -1,314 +1,42 @@
-name: boltic-sdk-todos-api
-description: A serverless CRUD API for managing todos using the Boltic SDK
-version: "1.0.0"
+title: boltic-todo-capture
+description: Minimal todo capture backend and UI powered by the Boltic SDK
 author: "AI Assistant"
 category: "Database"
-runtime: nodejs18
+language:
+  name: nodejs
+  version: "20"
+  title: NodeJS
+version: 0.1.0
+handler: handler.js
 
-# Environment variables required for the function
 environment:
-  # Required environment variables
   BOLTIC_API_KEY:
-    description: "Boltic API key for authentication"
+    description: "Boltic API key for authenticating SDK requests"
     required: true
-    type: string
-  
-  # Optional environment variables with defaults
-  BOLTIC_TABLE_NAME:
-    description: "Name/ID of the Boltic table to use for todos"
+  BOLTIC_TODOS_TABLE:
+    description: "Name of the table storing todo records"
     required: false
-    type: string
     default: "todos"
+  BOLTIC_ENVIRONMENT:
+    description: "Boltic environment (sit, uat, prod, etc.)"
+    required: false
+    default: "sit"
+  BOLTIC_TIMEOUT_MS:
+    description: "Override for Boltic SDK request timeout (ms)"
+    required: false
+  BOLTIC_DEBUG:
+    description: "Set to true to enable Boltic SDK debug logging"
+    required: false
 
-# Function configuration
-function:
-  handler: handler.js
-  timeout: 30s
-  memory: 256MB
-  
-# Dependencies
-dependencies:
-  - boltic-sdk
-
-# API endpoints documentation
-endpoints:
-  - method: OPTIONS
-    path: "*"
-    description: "CORS preflight handler for all routes"
-    
-  - method: POST
-    path: "/setup"
-    description: "Create the todos table if it doesn't exist (idempotent)"
-    response:
-      success:
-        status: 200
-        schema:
-          type: object
-          properties:
-            data:
-              type: object
-              properties:
-                created:
-                  type: boolean
-                alreadyExisted:
-                  type: boolean
-                table:
-                  type: object
-  
-  - method: GET
-    path: "/todos"
-    description: "List all todos with pagination"
-    parameters:
-      query:
-        limit:
-          type: integer
-          default: 20
-          description: "Maximum number of todos to return"
-        offset:
-          type: integer
-          default: 0
-          description: "Number of todos to skip"
-    response:
-      success:
-        status: 200
-        schema:
-          type: object
-          properties:
-            data:
-              type: array
-              items:
-                $ref: "#/schemas/Todo"
-            pagination:
-              type: object
-              properties:
-                limit:
-                  type: integer
-                offset:
-                  type: integer
-                total:
-                  type: integer
-  
-  - method: GET
-    path: "/todos/{id}"
-    description: "Get a single todo by ID"
-    parameters:
-      path:
-        id:
-          type: string
-          description: "Todo ID"
-    response:
-      success:
-        status: 200
-        schema:
-          type: object
-          properties:
-            data:
-              $ref: "#/schemas/Todo"
-      error:
-        status: 404
-        description: "Todo not found"
-  
-  - method: POST
-    path: "/todos"
-    description: "Create a new todo"
-    requestBody:
-      required: true
-      schema:
-        type: object
-        required:
-          - title
-        properties:
-          title:
-            type: string
-            minLength: 1
-            description: "Todo title (required, non-empty)"
-          completed:
-            type: boolean
-            default: false
-            description: "Whether the todo is completed"
-    response:
-      success:
-        status: 201
-        schema:
-          type: object
-          properties:
-            data:
-              $ref: "#/schemas/Todo"
-  
-  - method: PATCH
-    path: "/todos/{id}"
-    description: "Update an existing todo"
-    parameters:
-      path:
-        id:
-          type: string
-          description: "Todo ID"
-    requestBody:
-      required: true
-      schema:
-        type: object
-        minProperties: 1
-        properties:
-          title:
-            type: string
-            minLength: 1
-            description: "New todo title"
-          completed:
-            type: boolean
-            description: "Whether the todo is completed"
-    response:
-      success:
-        status: 200
-        schema:
-          type: object
-          properties:
-            data:
-              $ref: "#/schemas/Todo"
-      error:
-        status: 404
-        description: "Todo not found"
-  
-  - method: DELETE
-    path: "/todos/{id}"
-    description: "Delete a todo by ID"
-    parameters:
-      path:
-        id:
-          type: string
-          description: "Todo ID"
-    response:
-      success:
-        status: 200
-        schema:
-          type: object
-          properties:
-            data:
-              type: object
-              properties:
-                id:
-                  type: string
-                deleted:
-                  type: boolean
-                  const: true
-      error:
-        status: 404
-        description: "Todo not found"
-
-# Data schemas
-schemas:
-  Todo:
-    type: object
-    properties:
-      id:
-        type: string
-        description: "Unique todo identifier"
-      title:
-        type: string
-        description: "Todo title"
-      completed:
-        type: boolean
-        description: "Whether the todo is completed"
-      createdAt:
-        type: string
-        format: date-time
-        description: "When the todo was created"
-      updatedAt:
-        type: string
-        format: date-time
-        description: "When the todo was last updated"
-    required:
-      - id
-      - title
-      - completed
-      - createdAt
-      - updatedAt
-
-# Error response schema
-errorSchema:
-  type: object
-  properties:
-    error:
-      type: object
-      properties:
-        code:
-          type: string
-          description: "Error code"
-        message:
-          type: string
-          description: "Human-readable error message"
-        details:
-          type: string
-          description: "Additional error details (optional)"
-      required:
-        - code
-        - message
-
-# CORS configuration
 cors:
   allowOrigin: "*"
-  allowMethods: "GET,POST,PATCH,DELETE,OPTIONS"
+  allowMethods: "OPTIONS,GET,POST"
   allowHeaders: "Content-Type, Authorization"
 
-# Additional metadata
 metadata:
   tags:
-    - crud
-    - database
-    - todos
     - boltic
+    - todos
+    - database
     - sdk
-  
-  examples:
-    createTodo:
-      description: "Create a new todo"
-      request:
-        method: POST
-        path: "/todos"
-        body:
-          title: "Buy groceries"
-          completed: false
-      response:
-        status: 201
-        body:
-          data:
-            id: "todo_123"
-            title: "Buy groceries"
-            completed: false
-            createdAt: "2023-10-01T12:00:00Z"
-            updatedAt: "2023-10-01T12:00:00Z"
-    
-    updateTodo:
-      description: "Mark todo as completed"
-      request:
-        method: PATCH
-        path: "/todos/todo_123"
-        body:
-          completed: true
-      response:
-        status: 200
-        body:
-          data:
-            id: "todo_123"
-            title: "Buy groceries"
-            completed: true
-            createdAt: "2023-10-01T12:00:00Z"
-            updatedAt: "2023-10-01T12:05:00Z"
-    
-    listTodos:
-      description: "Get todos with pagination"
-      request:
-        method: GET
-        path: "/todos?limit=10&offset=0"
-      response:
-        status: 200
-        body:
-          data:
-            - id: "todo_123"
-              title: "Buy groceries"
-              completed: true
-              createdAt: "2023-10-01T12:00:00Z"
-              updatedAt: "2023-10-01T12:05:00Z"
-          pagination:
-            limit: 10
-            offset: 0
-            total: 1
+    - form

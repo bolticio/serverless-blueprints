@@ -1,40 +1,28 @@
 {
-  "name": "boltic-sdk-todos-api",
+  "name": "boltic-todo-app",
   "version": "1.0.0",
-  "description": "A serverless CRUD API for managing todos using the Boltic SDK",
+  "description": "Interactive todo management blueprint powered by the @boltic/sdk.",
   "type": "module",
   "main": "handler.js",
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
-    "start": "node handler.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "LOCAL_TEST=1 node handler.js",
+    "dev": "LOCAL_TEST=1 node handler.js"
   },
   "keywords": [
     "boltic",
     "sdk",
     "serverless",
-    "crud",
     "todos",
-    "api",
-    "database"
+    "ui",
+    "crud"
   ],
   "author": "AI Assistant",
   "license": "MIT",
   "dependencies": {
-    "boltic-sdk": "^0.0.1"
-  },
-  "peerDependencies": {
-    "node": ">=18.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-org/serverless-blueprints.git",
-    "directory": "nodejs/boltic-sdk"
-  },
-  "bugs": {
-    "url": "https://github.com/your-org/serverless-blueprints/issues"
-  },
-  "homepage": "https://github.com/your-org/serverless-blueprints/tree/main/nodejs/boltic-sdk#readme"
+    "@boltic/sdk": "^0.0.2",
+    "dotenv": "^17.2.2"
+  }
 }
