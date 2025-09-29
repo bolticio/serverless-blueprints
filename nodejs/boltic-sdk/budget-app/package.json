@@ -1,26 +1,23 @@
 {
-  "name": "boltic-product-app",
+  "name": "boltic-budget-planner",
   "version": "1.0.0",
-  "description": "Interactive product management blueprint powered by the @boltic/sdk.",
+  "description": "Single-page micro budget planner powered by the @boltic/sdk.",
   "type": "module",
   "main": "handler.js",
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
-    "start": "LOCAL_TEST=1 node handler.js",
-    "dev": "LOCAL_TEST=1 node handler.js"
+    "start": "LOCAL_TEST=1 node handler.js"
   },
   "keywords": [
     "boltic",
-    "sdk",
+    "budget",
+    "finance",
     "serverless",
-    "products",
-    "ui",
-    "crud"
+    "sdk"
   ],
   "author": "AI Assistant",
-  "license": "MIT",
   "dependencies": {
     "@boltic/sdk": "^0.0.2",
     "dotenv": "^17.2.2"

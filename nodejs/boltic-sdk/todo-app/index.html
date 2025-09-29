@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Boltic Todo Capture</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="card">
+    <h1>Create Todo</h1>
+    <p class="description">Capture lightweight todos and store them in Boltic with a single click.</p>
+
+    <form id="todo-form" novalidate>
+      <div class="field">
+        <label for="title">Title *</label>
+        <input id="title" name="title" type="text" placeholder="Plan launch checklist" maxlength="160" autocomplete="off" required />
+      </div>
+
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" placeholder="Add more context for the todo" rows="4" maxlength="4000"></textarea>
+      </div>
+
+      <div class="fieldset">
+        <div class="field">
+          <label for="status-select">Status</label>
+          <select id="status-select" name="status">
+            <option value="pending" selected>Pending</option>
+            <option value="in-progress">In progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="priority">Priority</label>
+          <input id="priority" name="priority" type="text" placeholder="Optional" maxlength="80" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="due-date">Due date</label>
+        <input id="due-date" name="due-date" type="datetime-local" />
+      </div>
+
+      <button type="submit">Save Todo</button>
+      <div id="status" class="status" hidden></div>
+    </form>
+
+    <section class="history" aria-live="polite">
+      <header class="history-header">
+        <h2>Recent Todos</h2>
+        <button id="refresh-btn" type="button" class="secondary">Refresh</button>
+      </header>
+      <ul id="recent-todos" class="history-list">
+        <li class="empty" hidden>No todos yet. Submit your first todo above.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>

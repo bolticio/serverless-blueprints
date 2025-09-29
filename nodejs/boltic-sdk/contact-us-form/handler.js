@@ -6,21 +6,20 @@ import { fileURLToPath } from 'node:url';
 
 const REQUIRED_ENV_VARS = ['BOLTIC_API_KEY'];
 const DEFAULT_ENVIRONMENT = 'sit';
-const DEFAULT_TABLE = 'todos';
-const MAX_BODY_SIZE_BYTES = 64 * 1024; // keep payloads small
+const DEFAULT_TABLE = 'contact_us';
+const MAX_BODY_SIZE_BYTES = 64 * 1024;
 const MAX_PAGE_SIZE = 100;
-const MAX_TITLE_LENGTH = 160;
-const MAX_DESCRIPTION_LENGTH = 4000;
-const MAX_STATUS_LENGTH = 40;
-const ALLOWED_STATUSES = ['pending', 'in-progress', 'completed'];
+const MAX_MESSAGE_LENGTH = 1500;
+const MAX_NAME_LENGTH = 120;
+const PHONE_MAX_LENGTH = 40;
 
 const MODULE_DIR = fileURLToPath(new URL('.', import.meta.url));
 
 const RAW_ENVIRONMENT = process.env.BOLTIC_ENVIRONMENT || process.env.ENVIRONMENT || DEFAULT_ENVIRONMENT;
 const ENVIRONMENT = RAW_ENVIRONMENT.toLowerCase();
-const TODOS_TABLE = process.env.BOLTIC_TODOS_TABLE || process.env.BOLTIC_TABLE_NAME || DEFAULT_TABLE;
+const CONTACT_TABLE = process.env.BOLTIC_CONTACT_TABLE || DEFAULT_TABLE;
 const BOLTIC_DEBUG = process.env.BOLTIC_DEBUG === 'true';
-const BOLTIC_TIMEOUT_MS = Number(process.env.BOLTIC_TIMEOUT_MS || 10_000);
+const BOLTIC_TIMEOUT_MS = Number(process.env.BOLTIC_TIMEOUT_MS || 10000);
 
 for (const envVar of REQUIRED_ENV_VARS) {
   if (!process.env[envVar]) {
@@ -57,7 +56,6 @@ const parseJSON = (req) => new Promise((resolve, reject) => {
       resolve({});
       return;
     }
-
     try {
       resolve(JSON.parse(payload));
     } catch (error) {
@@ -98,6 +96,36 @@ const sendError = (res, statusCode, code, message, details) => {
   });
 };
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^[+\d().\-\s]*$/;
+
+const validateContactPayload = ({ name, email, message, phone }) => {
+  if (!name) {
+    return 'Name is required.';
+  }
+  if (name.length > MAX_NAME_LENGTH) {
+    return 'Name is too long.';
+  }
+  if (!email || !emailRegex.test(email)) {
+    return 'A valid email address is required.';
+  }
+  if (!message) {
+    return 'Message cannot be empty.';
+  }
+  if (message.length > MAX_MESSAGE_LENGTH) {
+    return `Message is too long. Please keep it under ${MAX_MESSAGE_LENGTH} characters.`;
+  }
+  if (phone) {
+    if (!phoneRegex.test(phone)) {
+      return 'Phone number has invalid characters.';
+    }
+    if (phone.length > PHONE_MAX_LENGTH) {
+      return 'Phone number is too long.';
+    }
+  }
+  return null;
+};
+
 const router = {
   routes: [],
 
@@ -115,7 +143,7 @@ const router = {
           paramNames.push(segment.slice(1));
           return '([^/]+)';
         }
-        return segment.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+        return segment.replace(/[-/\^$*+?.()|[\]{}]/g, '\$&');
       })
       .join('/');
 
@@ -223,45 +251,46 @@ const withTimeout = async (promise, description) => {
 
 const requiredColumns = [
   {
-    name: 'title',
+    name: 'name',
     type: 'text',
     is_nullable: false,
-    description: 'Todo title',
+    description: 'Sender name',
     field_order: 1,
   },
   {
-    name: 'description',
-    type: 'long-text',
-    is_nullable: true,
-    description: 'Detailed description of the todo',
+    name: 'email',
+    type: 'text',
+    is_nullable: false,
+    is_indexed: true,
+    description: 'Sender email',
     field_order: 2,
   },
   {
-    name: 'status',
-    type: 'text',
+    name: 'message',
+    type: 'long-text',
     is_nullable: false,
-    description: 'Todo status (pending, in-progress, completed)',
+    description: 'Message body',
     field_order: 3,
   },
   {
-    name: 'dueDate',
-    type: 'date-time',
+    name: 'phone',
+    type: 'text',
     is_nullable: true,
-    description: 'Optional due date',
+    description: 'Optional phone number',
     field_order: 4,
   },
   {
-    name: 'priority',
+    name: 'source',
     type: 'text',
-    is_nullable: true,
-    description: 'Optional priority label',
+    is_nullable: false,
+    description: 'Submission source channel',
     field_order: 5,
   },
   {
-    name: 'createdAt',
+    name: 'submittedAt',
     type: 'date-time',
     is_nullable: false,
-    description: 'Creation timestamp',
+    description: 'Submission timestamp',
     field_order: 6,
   },
 ];
@@ -303,11 +332,11 @@ const findOrCreateTable = async () => {
   let lookup;
   try {
     lookup = await withTimeout(
-      bolticClient.tables.findByName(TODOS_TABLE),
-      'Boltic table lookup',
+      bolticClient.tables.findByName(CONTACT_TABLE),
+      'Boltic table lookup'
     );
   } catch (error) {
-    throw new Error(formatBolticError('Failed to query todos table', error));
+    throw new Error(formatBolticError('Failed to query contact table', error));
   }
 
   if (!isErrorResponse(lookup) && lookup.data) {
@@ -315,8 +344,8 @@ const findOrCreateTable = async () => {
   }
 
   const tableDefinition = {
-    name: TODOS_TABLE,
-    description: 'Todo items tracked via the Boltic SDK todo example',
+    name: CONTACT_TABLE,
+    description: 'Contact form submissions stored from the serverless blueprint sample',
     fields: requiredColumns,
   };
 
@@ -324,101 +353,49 @@ const findOrCreateTable = async () => {
   try {
     creationResult = await withTimeout(
       bolticClient.tables.create(tableDefinition),
-      'Boltic table creation',
+      'Boltic table creation'
     );
   } catch (error) {
-    throw new Error(formatBolticError(`Failed to create Boltic table '${TODOS_TABLE}'`, error));
+    throw new Error(formatBolticError(`Failed to create Boltic table '${CONTACT_TABLE}'`, error));
   }
 
   if (isErrorResponse(creationResult)) {
-    const message = creationResult.error?.message || 'Failed to create todos table';
+    const message = creationResult.error?.message || 'Failed to create contact submissions table';
     throw new Error(message);
   }
 
   let verify;
   try {
     verify = await withTimeout(
-      bolticClient.tables.findByName(TODOS_TABLE),
-      'Boltic table verification',
+      bolticClient.tables.findByName(CONTACT_TABLE),
+      'Boltic table verification'
     );
   } catch (error) {
-    throw new Error(formatBolticError('Unable to verify Boltic todos table creation', error));
+    throw new Error(formatBolticError('Unable to verify Boltic contact table creation', error));
   }
 
   if (isErrorResponse(verify) || !verify.data) {
-    throw new Error('Unable to verify Boltic todos table creation');
+    throw new Error('Unable to verify Boltic contact table creation');
   }
 
-  console.log(`Created Boltic table '${TODOS_TABLE}' (id: ${verify.data.id}).`);
+  console.log(`Created Boltic table '${CONTACT_TABLE}' (id: ${verify.data.id}).`);
   return verify.data;
-};
-
-const normalizeString = (value) => (typeof value === 'string' ? value.trim() : '');
-
-const normalizeStatus = (value) => {
-  if (typeof value !== 'string') {
-    return null;
-  }
-  const trimmed = value.trim().toLowerCase();
-  if (!trimmed) {
-    return null;
-  }
-  if (!ALLOWED_STATUSES.includes(trimmed)) {
-    return undefined;
-  }
-  return trimmed;
-};
-
-const normalizeDueDate = (value) => {
-  if (!value) {
-    return null;
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return undefined;
-  }
-  return date.toISOString();
-};
-
-const validateTodoPayload = ({ title, description, status, dueDate, priority }) => {
-  if (!title) {
-    return 'Title is required.';
-  }
-  if (title.length > MAX_TITLE_LENGTH) {
-    return `Title is too long. Keep it under ${MAX_TITLE_LENGTH} characters.`;
-  }
-  if (description && description.length > MAX_DESCRIPTION_LENGTH) {
-    return 'Description is too long.';
-  }
-  if (status && status.length > MAX_STATUS_LENGTH) {
-    return 'Status value is too long.';
-  }
-  if (status && !ALLOWED_STATUSES.includes(status)) {
-    return `Status must be one of: ${ALLOWED_STATUSES.join(', ')}.`;
-  }
-  if (dueDate === undefined) {
-    return 'Due date is invalid. Please provide a valid ISO 8601 date or leave it blank.';
-  }
-  if (priority && priority.length > 80) {
-    return 'Priority label must be 80 characters or fewer.';
-  }
-  return null;
 };
 
 const handleOptions = async (req, res) => {
   sendSuccess(res, 200, { message: 'OK' });
 };
 
-const handleSetup = async (req, res) => {
+const handleSetup = async (req, res, params, client) => {
   try {
     const tableInfo = await ensureBolticSetup();
 
     sendSuccess(res, 200, {
-      message: 'Boltic setup complete. Ready to manage todos.',
+      message: 'Boltic setup complete. Ready to accept submissions.',
       data: tableInfo,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to setup todos table';
+    const message = error instanceof Error ? error.message : 'Failed to setup contact table';
     const isNotSupported = typeof message === 'string' && (message.includes('not supported') || error?.status === 501);
 
     if (isNotSupported) {
@@ -426,33 +403,26 @@ const handleSetup = async (req, res) => {
         res,
         501,
         'TABLE_CREATION_NOT_SUPPORTED',
-        'SDK-based table creation is not supported. Create the table manually with columns: title (text), description (long-text), status (text), dueDate (date-time), priority (text), createdAt (date-time).',
+        'SDK-based table creation is not supported. Please create the table manually with columns: name (text), email (text), message (long-text), phone (text, optional), source (text), submittedAt (date-time).'
       );
       return;
     }
 
-    sendError(res, 500, 'SETUP_ERROR', 'Failed to setup todos table', message);
+    sendError(res, 500, 'SETUP_ERROR', 'Failed to setup contact table', message);
   }
 };
 
-const handleCreateTodo = async (req, res, _params, client) => {
+const handleCreateContact = async (req, res, params, client) => {
   try {
     const body = await parseJSON(req);
-    const title = normalizeString(body.title);
-    const description = normalizeString(body.description ?? body.notes ?? '');
-    const rawStatus = typeof body.status === 'string' ? body.status : '';
-    const status = normalizeStatus(rawStatus);
-    const dueDate = normalizeDueDate(body.dueDate ?? body.due_date ?? body.due ?? null);
-    const priority = normalizeString(body.priority || '');
+    const payload = {
+      name: typeof body.name === 'string' ? body.name.trim() : '',
+      email: typeof body.email === 'string' ? body.email.trim().toLowerCase() : '',
+      phone: typeof body.phone === 'string' ? body.phone.trim() : '',
+      message: typeof body.message === 'string' ? body.message.trim() : '',
+    };
 
-    const validationError = validateTodoPayload({
-      title,
-      description,
-      status: status === null ? 'pending' : status,
-      dueDate,
-      priority,
-    });
-
+    const validationError = validateContactPayload(payload);
     if (validationError) {
       sendError(res, 400, 'INVALID_INPUT', validationError);
       return;
@@ -460,49 +430,60 @@ const handleCreateTodo = async (req, res, _params, client) => {
 
     await ensureBolticSetup();
 
-    const createdAt = new Date().toISOString();
-    const finalStatus = status === null ? 'pending' : status;
+    const submittedAt = new Date().toISOString();
+    const source = typeof body.source === 'string' && body.source.trim().length > 0
+      ? body.source.trim()
+      : 'web';
 
     let result;
     try {
       result = await withTimeout(
-        client.records.insert(TODOS_TABLE, {
-          title,
-          description: description || null,
-          status: finalStatus,
-          dueDate,
-          priority: priority || null,
-          createdAt,
+        client.records.insert(CONTACT_TABLE, {
+          name: payload.name,
+          email: payload.email,
+          phone: payload.phone || null,
+          message: payload.message,
+          source,
+          submittedAt,
         }),
-        'Boltic todo creation',
+        'Boltic record insert'
       );
     } catch (error) {
-      throw new Error(formatBolticError('Failed to create todo', error));
+      throw new Error(formatBolticError('Failed to save contact submission', error));
     }
 
-    if (isErrorResponse(result)) {
-      const message = result.error?.message || 'Failed to create todo';
-      sendError(res, 500, 'CREATE_ERROR', message);
+    if (isErrorResponse(result) || result?.error) {
+      const errorMessage = result?.error?.message || 'Failed to save your message. Please try again later.';
+      console.error('Boltic insert error:', result?.error || result);
+      sendError(res, 502, 'CREATE_ERROR', errorMessage);
       return;
     }
 
     sendSuccess(res, 201, {
-      message: 'Todo created successfully.',
-      data: result.data,
+      message: 'Thanks for reaching out! We will get back to you soon.',
+      data: {
+        id: result?.data?.id,
+        submittedAt,
+      },
     });
   } catch (error) {
-    console.error('Create todo error:', error);
     if (error.message === 'Invalid JSON payload') {
       sendError(res, 400, 'INVALID_JSON', error.message);
-    } else if (error.message === 'Request body too large') {
-      sendError(res, 413, 'PAYLOAD_TOO_LARGE', error.message);
-    } else {
-      sendError(res, 500, 'CREATE_ERROR', 'Failed to create todo', error.message);
+      return;
     }
+    if (error.message === 'Request body too large') {
+      sendError(res, 413, 'PAYLOAD_TOO_LARGE', error.message);
+      return;
+    }
+    const fallback = 'Unexpected server error. Please try again later.';
+    const message = error instanceof Error ? error.message : fallback;
+    const shouldSignalUnavailable = typeof message === 'string' && (message.includes('Boltic') || message.includes('contact table'));
+    const status = shouldSignalUnavailable ? 503 : 500;
+    sendError(res, status, shouldSignalUnavailable ? 'SERVICE_UNAVAILABLE' : 'CREATE_ERROR', message);
   }
 };
 
-const handleListTodos = async (req, res, _params, client, url) => {
+const handleListContacts = async (req, res, params, client, url) => {
   try {
     const limitParam = parseInt(url.searchParams.get('limit'), 10);
     const limit = Number.isFinite(limitParam) && limitParam > 0
@@ -516,41 +497,18 @@ const handleListTodos = async (req, res, _params, client, url) => {
 
     await ensureBolticSetup();
 
-    const baseQuery = {
-      page: {
-        page_no: pageNo,
-        page_size: limit,
-      },
-      sort: {
-        field: 'createdAt',
-        direction: 'desc',
-      },
-    };
-
-    const executeQuery = async (options) => withTimeout(
-      client.records.findAll(TODOS_TABLE, options),
-      'Boltic todo list fetch',
+    const response = await withTimeout(
+      client.records.findAll(CONTACT_TABLE, {
+        page: {
+          page_no: pageNo,
+          page_size: limit,
+        },
+      }),
+      'Boltic contact list fetch'
     );
 
-    let response = await executeQuery(baseQuery);
-
     if (isErrorResponse(response)) {
-      const message = response.error?.message || '';
-      const metaText = Array.isArray(response.error?.meta)
-        ? response.error.meta.join(' ').toLowerCase()
-        : '';
-      const combined = `${message} ${metaText}`.toLowerCase();
-      const needsFallback = combined.includes('sort') || combined.includes('field');
-      if (needsFallback) {
-        const fallbackQuery = { ...baseQuery };
-        delete fallbackQuery.sort;
-        console.warn('Todo list query fallback triggered:', combined.trim() || 'Sort error');
-        response = await executeQuery(fallbackQuery);
-      }
-    }
-
-    if (isErrorResponse(response)) {
-      throw new Error(response.error?.message || 'Failed to fetch todos');
+      throw new Error(response.error?.message || 'Failed to fetch contacts');
     }
 
     const records = response.data || [];
@@ -565,40 +523,38 @@ const handleListTodos = async (req, res, _params, client, url) => {
       },
     });
   } catch (error) {
-    console.error('Todo list failure:', error);
-    sendError(res, 500, 'FETCH_ERROR', 'Failed to fetch todos', error.message);
+    sendError(res, 500, 'FETCH_ERROR', 'Failed to fetch contacts', error.message);
   }
 };
 
-const handleGetTodo = async (req, res, params, client) => {
+const handleGetContact = async (req, res, params, client) => {
   try {
     await ensureBolticSetup();
 
     const response = await withTimeout(
-      client.records.findOne(TODOS_TABLE, params.id),
-      'Boltic todo lookup',
+      client.records.findOne(CONTACT_TABLE, params.id),
+      'Boltic contact lookup'
     );
-
     if (isErrorResponse(response)) {
       if (response.error?.code?.includes('not_found') || response.error?.message?.includes('not found')) {
-        sendError(res, 404, 'TODO_NOT_FOUND', `Todo with id ${params.id} not found`);
+        sendError(res, 404, 'CONTACT_NOT_FOUND', `Contact with id ${params.id} not found`);
         return;
       }
-      throw new Error(response.error?.message || 'Failed to fetch todo');
+      throw new Error(response.error?.message || 'Failed to fetch contact');
     }
 
     if (!response.data) {
-      sendError(res, 404, 'TODO_NOT_FOUND', `Todo with id ${params.id} not found`);
+      sendError(res, 404, 'CONTACT_NOT_FOUND', `Contact with id ${params.id} not found`);
       return;
     }
 
     sendSuccess(res, 200, { data: response.data });
   } catch (error) {
     if (error.status === 404 || error.message?.includes('not found')) {
-      sendError(res, 404, 'TODO_NOT_FOUND', `Todo with id ${params.id} not found`);
+      sendError(res, 404, 'CONTACT_NOT_FOUND', `Contact with id ${params.id} not found`);
       return;
     }
-    sendError(res, 500, 'FETCH_ERROR', 'Failed to fetch todo', error.message);
+    sendError(res, 500, 'FETCH_ERROR', 'Failed to fetch contact', error.message);
   }
 };
 
@@ -621,20 +577,15 @@ router.add('GET', '/index.html', staticAssetHandler('index.html'));
 router.add('GET', '/app.js', staticAssetHandler('app.js'));
 router.add('GET', '/style.css', staticAssetHandler('style.css'));
 router.add('GET', '/styles.css', staticAssetHandler('style.css'));
+router.add('POST', '/api/contact', handleCreateContact);
+router.add('POST', '/contact', handleCreateContact);
+router.add('POST', '/', handleCreateContact);
+router.add('GET', '/api/contact', handleListContacts);
+router.add('GET', '/api/contact/:id', handleGetContact);
 router.add('POST', '/setup', handleSetup);
-router.add('POST', '/api/setup', handleSetup);
-router.add('POST', '/', handleCreateTodo);
-router.add('POST', '/todos', handleCreateTodo);
-router.add('POST', '/api/todos', handleCreateTodo);
-router.add('GET', '/api/todos', handleListTodos);
-router.add('GET', '/todos', handleListTodos);
-router.add('GET', '/api/todos/:id', handleGetTodo);
-router.add('GET', '/todos/:id', handleGetTodo);
 router.add('GET', '/health', async (req, res) => {
   sendSuccess(res, 200, { message: 'ok' });
 });
-router.add('GET', '*', handleNotFound);
-router.add('POST', '*', handleNotFound);
 
 export const handler = async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
@@ -653,13 +604,13 @@ export const handler = async (req, res) => {
   }
 };
 
-export const startLocalServer = async () => {
+const startLocalServer = async () => {
   const http = await import('node:http');
   const port = Number(process.env.PORT || 3000);
 
   try {
     await ensureBolticSetup();
-    console.log('Boltic setup complete. Ready to manage todos.');
+    console.log('Boltic setup complete. Ready to accept submissions.');
   } catch (error) {
     console.warn(formatBolticError('Boltic setup could not be completed during startup', error));
   }
@@ -672,13 +623,16 @@ export const startLocalServer = async () => {
   });
 
   server.listen(port, () => {
-    console.log(`Todo handler listening on http://localhost:${port}`);
+    console.log(`Contact Us handler listening on http://localhost:${port}`);
   });
-
-  return server;
 };
 
+// if (process.env.LOCAL_TEST) {
+//   startLocalServer().catch((error) => {
+//     console.error('Failed to start local server', error);
+//   });
+// }
 
 startLocalServer().catch((error) => {
-  console.error('Failed to start local server', error);
+    console.error('Failed to start local server', error);
 });
